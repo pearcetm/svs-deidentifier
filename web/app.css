@@ -352,3 +352,7 @@ body{
 	cursor:pointer;
 	outline:thin black solid;
 }
+.error-message{
+	color:red;
+	font-weight:bold;
+}

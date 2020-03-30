@@ -195,7 +195,7 @@ def detect_format(filename):
     retval = None
     # print('Detecting format for ',filename)
     try:
-        with open(filename, 'r+b') as fp: 
+        with open(filename, 'rb') as fp: 
             t = tiffparser.TiffFile(fp)
             description = t.pages[0].description
             # print('Description for ',filename,': ',description.replace('|','\n'))
@@ -211,7 +211,7 @@ def add_description(f):
     # print(f'Adding image description to {f}\n')
     try:
         f['filesize'] = os.stat(f['file']).st_size
-        with open(f['file'], 'r+b') as fp:
+        with open(f['file'], 'rb') as fp:
             t = tiffparser.TiffFile(fp)
             desc=re.split(';|\||\r\n?',t.pages[0].description)
             a={}
@@ -253,12 +253,13 @@ def get_files(path=''):
     dialog = QFileDialog(None)
     dialog.setFileMode(QFileDialog.ExistingFiles)
     dialog.setViewMode(QFileDialog.Detail)
+    # dialog.setOption(QFileDialog.DontUseNativeDialog, True)
     dialog.setNameFilters(['Aperio SVS or CSV (*.svs *.csv)'])
     if len(path)>0 and QDir(path).exists():
         dialog.setDirectory(path)
 
     files = []
-    if dialog.exec_() == QFileDialog.Accepted:
+    if dialog.exec() == QFileDialog.Accepted:
         dlg_out = dialog.selectedFiles()
         files = dlg_out
         eel.select_files_browsed_directory(dialog.directory().absolutePath())
@@ -275,28 +276,32 @@ def get_dir(path=''):
     
     dialog = QFileDialog(None)
     dialog.setFileMode(QFileDialog.Directory)
-    dialog.setOption(QFileDialog.ShowDirsOnly, True)
+    # dialog.setOption(QFileDialog.ShowDirsOnly, True)
+    # dialog.setOption(QFileDialog.DontUseNativeDialog, True)
     dialog.setViewMode(QFileDialog.Detail)
     if len(path)>0 and QDir(path).exists():
         dialog.setDirectory(path)
 
     directory = ''
-    if dialog.exec_() == QFileDialog.Accepted:
+    if dialog.exec() == QFileDialog.Accepted:
         dlg_out = dialog.selectedFiles()
         directory = dlg_out[0]
         eel.select_dir_browsed_directory(dialog.directory().absolutePath())
         # print('Accepted',directory,dialog.directory().absolutePath())
-
+    
     output = {
         'directory':directory,
         'total':None,
-        'free':None
+        'free':None,
+        'writable':False
     }
 
     if directory != '':
         total, used, free = shutil.disk_usage(directory)
         output['total']=total
         output['free']=free
+        output['writable']=os.access(directory, os.W_OK)
+
     return output
 
 @eel.expose
@@ -342,21 +347,31 @@ class CopyOp(object):
         self.lock.release()
         return cp
 
+def file_progress(b):
+    progress = 0 # default value
+    dest_set = b['dest']!=None
+    if dest_set and os.path.isfile(b['dest']):
+        progress = os.stat(b['dest']).st_size
+    return progress
+
 # def track_copy_progress: update the GUI with progress of copy operations
 def track_copy_progress(copyop):
     # Start with the original file structure, in case it has already updated by the time this thread executes
     o = copyop.original
     while(any([f['done']==False for f in o])):
-        n=copyop.read()
-        d=[{'id':b['id'],'dest':b['dest'],'renamed':b['renamed']} 
-                        for a, b in zip(o,n) if a['dest']!=b['dest'] ]
-        p=[{'id':b['id'],'progress':os.stat(b['dest']).st_size if b['dest']!=None else 0} for b in n if b['done']==False ]
-        f = [b for a,b in zip(o,n) if a['done']!=b['done'] ]
-        
-        #send updates to javascript/GUI
-        eel.update_progress({'destinations':d,'progress':p,'finalized':f})
-        #copy new values to old to track what needs updating still
-        o = n
+        try:
+            n=copyop.read()
+            d=[{'id':b['id'],'dest':b['dest'],'renamed':b['renamed']} 
+                            for a, b in zip(o,n) if a['dest']!=b['dest'] ]
+            p=[{'id':b['id'],'progress':file_progress(b)} for b in n if b['done']==False ]
+            f = [b for a,b in zip(o,n) if a['done']!=b['done'] ]
+            
+            #send updates to javascript/GUI
+            eel.update_progress({'destinations':d,'progress':p,'finalized':f})
+            #copy new values to old to track what needs updating still
+            o = n
+        except Exception as e:
+            print('Exception in track_copy_progress:',e)
         #rate limit this progress reporting
         eel.sleep(0.03)
         # ii+=1
@@ -375,8 +390,8 @@ def copy_and_strip(file, copyop, index):
         # create the destination directory if necessary
         os.makedirs(dest_path, exist_ok=True)
         filename, file_extension = os.path.splitext(newname)
-        if filename.endswith('failme'):
-            raise ValueError('Cannot copy this file')
+        # if filename.endswith('failme'):
+            # raise ValueError('Cannot copy this file')
         # now the directory exists; check if the file already exists
         if not os.path.exists(newname):  # folder exists, file does not
             copyop.update(index, {'dest':newname})

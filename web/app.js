@@ -322,12 +322,19 @@ $(function(){
 	})
 	targetdlg.on('destination-selected',function(ev,dir_info){
 		overlay.trigger('activate',[targetdlg]);
-		if(dir_info.directory !== ''){
-			//only enable the "OK" button if a directory is selected
+		if(dir_info.directory !== '' && dir_info.writable){
+			//only enable the "OK" button if a WRITABLE directory is selected
 			targetdlg.find('.dest-selection').attr('selected',true);
 			targetdlg.find('.ok').attr('disabled',false);
 			targetdlg.find('.destination').text(dir_info.directory);
 			targetdlg.data({destination:dir_info.directory,total:dir_info.total,free:dir_info.free});
+		}
+		else if(dir_info.directory !== ''){
+			targetdlg.find('.dest-selection').attr('selected',true);
+			targetdlg.find('.ok').attr('disabled',true);
+			var err=$('<span>',{class:'error-message'}).text('This directory is read-only');
+			var errdiv=$('<div>').append(err);
+			targetdlg.find('.destination').text(dir_info.directory).append(errdiv);
 		}
 		else{
 			targetdlg.find('.dest-selection').removeAttr('selected');
