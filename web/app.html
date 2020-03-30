@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <!-- <script src="https://code.jquery.com/jquery-1.11.0.min.js"></script> -->
+        
+        <meta name="viewport" content="width=device-width, height=device-height, user-scalable=0, maximum-scale=1.0, minimum-scale=1.0, initial-scale=1.0">
+        <meta charset="utf-8">
+        <title>WSI Deidentifier</title>
+
+        <script type='text/javascript' src='jquery.js'></script>
+        <script type='text/javascript' src='/eel.js'></script>
+        <script type='text/javascript' src='app.js'></script>
+        <link href='app.css' rel='stylesheet'>
+    </head>
+    <body>
+        <h2>Whole Slide Image De-identification Tool for Aperio .SVS files</h2>
+        <div class='header'>
+            <div class='columns steps'>
+                <div>
+                    <label>Step 1: </label>
+                    <button id='pick-files'>Choose File(s)</button>
+                    <span class='label'>Select .svs files, or a .csv with a file list</span>
+                </div>
+                <div>
+                    <label>Step 2: </label>
+                    <button id='do-deidentification'>Copy and remove labels from WSIs</button>
+                </div>
+                
+            </div>
+        </div>
+        <div id='filelist'></div>
+        <div class='overlay'>
+            <div class='overlay-background'></div>
+            <div class='overlay-content'>
+                
+            </div>
+            <div class='overlay-dialogs'>
+                <div class='overlay-dialog select-target'>
+                    <h3>Select a directory to copy files into</h3>
+                    <h4>Found <span class='num-files'></span> whole slide image<span class='plural-s'>s</span> to de-identify</h4>
+                    
+                    <div class='dest-selection'>
+                        <span class='destination'></span>
+                        <button class='pick-destination'>Choose Folder</button>
+                        <button class='remove-button'>X</button>
+                    </div>
+                    
+                    <div class='buttons'>
+                        <button class='ok'>OK</button>
+                        <button class='cancel'>Cancel</button>
+                    </div>
+                </div>
+
+                <div class='overlay-dialog choose-file'>
+                    <h3>Opening system file dialog</h3>
+                    <div>Please select a file/folder</div>
+                    <!-- <div>Note: the dialog may open behind other windows, especially on Mac platforms</div> -->
+                </div>
+
+                <div class='overlay-dialog failed'>
+                    <h3>Copy and de-identification error:</h3>
+                    <h4 class='error-message'></h4>
+                    <div class='buttons'>
+                        <button class='ok'>Edit and retry?</button>
+                        <button class='cancel'>Close</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </body>
+</html> 
