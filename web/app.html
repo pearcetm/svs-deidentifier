@@ -5,12 +5,15 @@
         
         <meta name="viewport" content="width=device-width, height=device-height, user-scalable=0, maximum-scale=1.0, minimum-scale=1.0, initial-scale=1.0">
         <meta charset="utf-8">
-        <title>WSI Deidentifier</title>
+        <title>WSI Deidentifier for Aperio SVS files</title>
 
         <script type='text/javascript' src='jquery.js'></script>
         <script type='text/javascript' src='/eel.js'></script>
         <script type='text/javascript' src='app.js'></script>
         <link href='app.css' rel='stylesheet'>
+        <script type='text/javascript' src='bootstrap/js/bootstrap.min.js'></script>
+        <link href='bootstrap/css/bootstrap.css' rel='stylesheet'>
+
     </head>
     <body>
         <h2>Whole Slide Image De-identification Tool for Aperio .SVS files</h2>
@@ -46,8 +49,8 @@
                     </div>
                     
                     <div class='buttons'>
-                        <button class='ok'>OK</button>
-                        <button class='cancel'>Cancel</button>
+                        <button class='ok btn btn-primary'>OK</button>
+                        <button class='cancel btn btn-primary'>Cancel</button>
                     </div>
                 </div>
 
@@ -58,12 +61,17 @@
                 </div>
 
                 <div class='overlay-dialog failed'>
-                    <h3>Copy and de-identification error:</h3>
+                    <h3>Copy and de-identification error</h3>
                     <h4 class='error-message'></h4>
                     <div class='buttons'>
-                        <button class='ok'>Edit and retry?</button>
-                        <button class='cancel'>Close</button>
+                        <button class='ok btn btn-primary'>Edit and retry?</button>
+                        <button class='cancel btn btn-secondary'>Close</button>
                     </div>
+                </div>
+
+                <div class='overlay-dialog options'>
+                    <div class='markdown'></div>
+                    <div><button class='ok btn btn-primary'>Ok</button></div>
                 </div>
 
             </div>

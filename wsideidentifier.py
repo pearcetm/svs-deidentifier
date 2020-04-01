@@ -54,6 +54,12 @@ import eel
 # $ pip install tinynumpy
 import tiffparser
 
+# Parse Markdown to create options interface
+import commonmark
+
+from bottle import route
+
+
 # pyqt5: python binding to Qt GUI framework, needed for file/directory picker dialog
 # $ pip install PyQt5==5.14.1
 # also requires qt5 to be installed
@@ -95,6 +101,13 @@ class Filebrowser(QObject):
 
 
 
+
+
+@route('/options')
+def options():
+    print('working directory',os.listdir(os.getcwd()))
+    with open('options.md','r') as fp:
+        return commonmark.commonmark(fp.read())
 
 # Read/modify TIFF files (as in the SVS files) using tiffparser library (stripped down tifffile lib)
 
@@ -404,6 +417,7 @@ class CopyOp(object):
 def file_progress(b):
     progress = 0 # default value
     dest_set = b['dest']!=None
+    # check both of these to make sure the new file has been created before trying to query current size
     if dest_set and os.path.isfile(b['dest']):
         progress = os.stat(b['dest']).st_size
     return progress
