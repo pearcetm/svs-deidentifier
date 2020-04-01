@@ -46,13 +46,6 @@ import platform
 # eel: for the html/css/javascript GUI
 # $ pip install Eel==0.12.2
 import eel
-# pyqt5: python binding to Qt GUI framework, needed for file/directory picker dialog
-# $ pip install PyQt5==5.14.1
-# also requires qt5 to be installed
-# - $ brew install qt5
-from PyQt5.QtWidgets import QApplication, QFileDialog, QLabel, QMainWindow
-from PyQt5.QtCore import QDir, Qt
-# from PyQt5 import QtGui, QtCore
 
 # tiffparser: stripped down version of tifffile
 # located in root project folder alongside this file.
@@ -61,8 +54,47 @@ from PyQt5.QtCore import QDir, Qt
 # $ pip install tinynumpy
 import tiffparser
 
+# pyqt5: python binding to Qt GUI framework, needed for file/directory picker dialog
+# $ pip install PyQt5==5.14.1
+# also requires qt5 to be installed
+# - $ brew install qt5
+from PyQt5.QtWidgets import QApplication, QFileDialog, QLabel, QMainWindow
+from PyQt5.QtCore import QDir, Qt, QUrl, QThread
+from PyQt5.QtWebEngineWidgets import QWebEnginePage, QWebEngineView
+from PyQt5.QtCore import QObject, pyqtSignal
 
-eel.init('web')
+
+class EelThread(QThread):
+    def __init__(self, parent = None, init='web',url='main.html'):
+        QThread.__init__(self, parent)
+        self.init = init
+        self.url = url
+
+    def run(self):        
+        # Note: This is never called directly. It is called by Qt once the
+        # thread environment has been set up.
+        eel.init(self.init)
+        eel.start(self.url, block=True, mode=None)
+
+class Filebrowser(QObject):
+    getsignal = pyqtSignal(str, str)
+
+    def handle_get(self,requesttype,path):
+        print(f'request handled in {int(QThread.currentThreadId())}')
+        if requesttype=='files':
+            get_files_implementation(path)
+        elif requesttype=='dir':
+            get_dir_implementation(path)
+
+
+    def connectto(self,other):
+        self.getsignal.connect(other.handle_get)
+
+    def get(self,requesttype='file', path='/'):
+        self.getsignal.emit(requesttype, path)
+
+
+
 
 # Read/modify TIFF files (as in the SVS files) using tiffparser library (stripped down tifffile lib)
 
@@ -244,16 +276,26 @@ def parse_files(files):
     # print('File list:', filelist)
     return filelist
 
+# File Dialog methods
+# use Filebrowser objects for thread safety via signal-slot mechanisms
 
+filedialog = Filebrowser()
 
 @eel.expose
 def get_files(path=''):
+    fb = Filebrowser()
+    fb.connectto(filedialog)
+    print(f'request made in {int(QThread.currentThreadId())}')
+    fb.get(requesttype='files',path=path)
+    return parse_files([])
+
+def get_files_implementation(path=''):
     # files, _ = QFileDialog.getOpenFileNames(caption="Select Files", filter="Aperio SVS (*.svs);;CSV Files (*.csv)")
     # files = ['/Users/Tom/Desktop/wsi_list.csv']
     dialog = QFileDialog(None)
     dialog.setFileMode(QFileDialog.ExistingFiles)
     dialog.setViewMode(QFileDialog.Detail)
-    # dialog.setOption(QFileDialog.DontUseNativeDialog, True)
+    dialog.setOption(QFileDialog.DontUseNativeDialog, True)
     dialog.setNameFilters(['Aperio SVS or CSV (*.svs *.csv)'])
     if len(path)>0 and QDir(path).exists():
         dialog.setDirectory(path)
@@ -271,13 +313,25 @@ def get_files(path=''):
 
 @eel.expose
 def get_dir(path=''):
-    
+    fb = Filebrowser()
+    fb.connectto(filedialog)
+    print(f'request made in {int(QThread.currentThreadId())}')
+    fb.get(requesttype='files',path=path)
+    output= {
+        'directory':'',
+        'total':None,
+        'free':None,
+        'writable':False
+    }
+    return output
+
+def get_dir_implementation(path=''):
     # directory = QFileDialog.getExistingDirectory(caption="Select Target Directory")
     
     dialog = QFileDialog(None)
     dialog.setFileMode(QFileDialog.Directory)
     # dialog.setOption(QFileDialog.ShowDirsOnly, True)
-    # dialog.setOption(QFileDialog.DontUseNativeDialog, True)
+    dialog.setOption(QFileDialog.DontUseNativeDialog, True)
     dialog.setViewMode(QFileDialog.Detail)
     if len(path)>0 and QDir(path).exists():
         dialog.setDirectory(path)
@@ -426,25 +480,39 @@ def copy_and_strip(file, copyop, index):
 
 
 app=QApplication([]) # create QApplication to enable file dialogs
-try:
-    eel.start('app.html', size=(1000, 600))
-except Exception: #no chrome installed? Try falling  back to Edge (Windows 10)
-    try:
-        if sys.platform in ['win32', 'win64'] and int(platform.release()) >= 10:
-            eel.start('app.html', size=(1000, 600), mode='edge')
-        else:
-            raise
-    except:
-        # pass
-        mw = QMainWindow()
-        mw.resize(600, 200)
-        mw.setWindowTitle('Aperio SVS Whole Slide Image Deidentifier')
-        label = QLabel('This program requires Chrome (or Edge, if Windows 10). Please install and retry.')
-        label.setAlignment(Qt.AlignCenter)
-        mw.setCentralWidget(label)
-        mw.show()
-        app.exec()
-# eel.start('app.html', size=(1000, 600))
+# try:
+#     raise ValueError()
+#     eel.init('web')
+#     eel.start('app.html', size=(1000, 600))
+# except Exception: #no chrome installed? Try falling  back to Edge (Windows 10)
+#     try:
+#         if sys.platform in ['win32', 'win64'] and int(platform.release()) >= 10:
+#             eel.init('web')
+#             eel.start('app.html', size=(1000, 600), mode='edge')
+#         else:
+#             raise
+#     except:
+#         # pass
+#         et=EelThread(init='web',url='app.html')
+#         et.start()
+
+#         w = QWebEngineView()
+#         w.resize(1100,800)
+#         w.load(QUrl('http://localhost:8000/app.html'))
+#         w.show()
+
+#         app.exec()
+
+et=EelThread(init='web',url='app.html')
+et.start()
+
+w = QWebEngineView()
+w.resize(1100,800)
+w.load(QUrl('http://localhost:8000/app.html'))
+w.show()
+
+app.exec()
+
 app.exit() # quit the QApplication
 
 
