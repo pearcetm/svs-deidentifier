@@ -61,8 +61,20 @@ from PyQt5.QtCore import QDir, Qt
 # $ pip install tinynumpy
 import tiffparser
 
+import commonmark
+
 
 eel.init('web')
+
+# Parse Markdown to create options interface
+from bottle import route
+
+
+@route('/options')
+def options():
+    print('working directory',os.listdir(os.getcwd()))
+    with open('options.md','r') as fp:
+        return commonmark.commonmark(fp.read())
 
 # Read/modify TIFF files (as in the SVS files) using tiffparser library (stripped down tifffile lib)
 
@@ -350,6 +362,7 @@ class CopyOp(object):
 def file_progress(b):
     progress = 0 # default value
     dest_set = b['dest']!=None
+    # check both of these to make sure the new file has been created before trying to query current size
     if dest_set and os.path.isfile(b['dest']):
         progress = os.stat(b['dest']).st_size
     return progress

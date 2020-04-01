@@ -9,6 +9,8 @@ $(function(){
 	var targetdlg=$('.overlay-dialog.select-target');
 	var filedlg=$('.overlay-dialog.choose-file');
 	var faileddlg=$('.overlay-dialog.failed');
+	var optionsdlg=$('.overlay-dialog.options');
+	var helpdlg=$('.overlay-dialog.help');
 
 	$('#pick-files').on('click',function(){
 		overlay.trigger('activate',[filedlg])
@@ -25,6 +27,20 @@ $(function(){
 		$(this).parent().removeAttr('selected').find('.destination').empty();
 		targetdlg.find('.ok').attr('disabled',true);
 	});
+	$('body').on('click','.progress-monitor.failed',function(e){
+		var el = $(this);
+		faileddlg.find('.error-message').text(el.data('failure-message'));
+		faileddlg.data('target',el);
+		overlay.trigger('activate',[faileddlg]);
+	});
+	$('.overlay-dialog.options .markdown').load('/options');
+
+	// Defer final setup until end of current event loop
+	setTimeout(function(){
+		setup_options_dialog()
+		overlay.trigger('activate',[optionsdlg])
+	},0)
+	
 	
 	function get_files(callback){
 		eel.get_files(get_select_files_browsed_directory())(callback)
@@ -92,12 +108,7 @@ $(function(){
 		p.data('original',e);
 		return p;
 	}
-	$('body').on('click','.progress-monitor.failed',function(e){
-		var el = $(this);
-		faileddlg.find('.error-message').text(el.data('failure-message'));
-		faileddlg.data('target',el);
-		overlay.trigger('activate',[faileddlg]);
-	});
+	
 
 	function do_deidentification(){
 		//re-order the DOM before starting the process
@@ -293,6 +304,7 @@ $(function(){
 
 	overlay.on('activate',function(ev,dialog){
 		if(ev.target !== this) return;
+		console.log('activating overlay')
 		// console.log('Activating overlay',ev,dialog)
 		overlay.addClass('active');
 		overlay.find('.overlay-content .overlay-dialog').appendTo(overlay.find('.overlay-dialogs'))
@@ -368,13 +380,19 @@ $(function(){
 	faileddlg.find('.cancel').on('click', function(){
 		overlay.trigger('inactivate');
 	})
-
+	optionsdlg.find('.ok').on('click',function(){
+		overlay.trigger('inactivate');
+	})
 	var uniqueID = (function(){
 	    var i=0;
 	    return function() {
 	        return 'uniqueID_'+(i++);
 	    }
 	})();
+
+	function setup_options_dialog(){
+		
+	}
 
 	//Local storage for persistence of user choices
 
