@@ -82,30 +82,57 @@ class EelThread(QThread):
         eel.init(self.init)
         eel.start(self.url, block=True, mode=None)
 
-class Filebrowser(QObject):
-    getsignal = pyqtSignal(str, str)
+class ThreadsafeCaller(QObject):
+    get_signal = pyqtSignal(QObject,dict)
+    # set_signal = pyqtSignal(dict)
+    
+    def __init__(self):
+        super(ThreadsafeCaller, self).__init__()
+        self.threadid=int(QThread.currentThreadId())
+        self.multithreading=False
+        self.returnvalue=None # read-only from self; written by other
+        self.waiting=False # read-only from self; written by other; atomic
 
-    def handle_get(self,requesttype,path):
-        print(f'request handled in {int(QThread.currentThreadId())}')
-        if requesttype=='files':
-            get_files_implementation(path)
-        elif requesttype=='dir':
-            get_dir_implementation(path)
+    def _make(self):
+        other = ThreadsafeCaller()
+
+        # if constructed from a different thread, use signal-slot to make threadsafe
+        if self.threadid != other.threadid:
+            other.multithreading=True
+            other.get_signal.connect(self._call)
+            
+        return other
+
+    def _call(self,other,d):
+        # unpack and call the function; package returned value into dict to send by signal
+        output={'result': d['f'](*d['args'], **d['kwargs'])}
+        other.returnvalue=output
+        other.waiting=False
+        return output
+
+    def _wait(self):
+        while self.waiting==True:
+            QThread.msleep(20)
 
 
-    def connectto(self,other):
-        self.getsignal.connect(other.handle_get)
+    def _callother(self,func,*args,**kwargs):
+        # package arguments into dict to send via signal
+        d={'f':func,'args':args,'kwargs':kwargs}
+        if self.multithreading:
+            self.waiting=True # set flag before triggering signal-slot
+            self.get_signal.emit(self,d)
+            self._wait()
+            return self.returnvalue['result'] #unpack result from dict
+        else:
+            return self._call(self,d)['result'] #unpack result from dict
 
-    def get(self,requesttype='file', path='/'):
-        self.getsignal.emit(requesttype, path)
-
-
-
+    def call(self,func,*args,**kwargs): 
+        other=self._make()
+        return other._callother(func,*args,**kwargs)
 
 
 @route('/options')
 def options():
-    print('working directory',os.listdir(os.getcwd()))
     with open('options.md','r') as fp:
         return commonmark.commonmark(fp.read())
 
@@ -292,84 +319,96 @@ def parse_files(files):
 # File Dialog methods
 # use Filebrowser objects for thread safety via signal-slot mechanisms
 
-filedialog = Filebrowser()
+# filedialog = Filebrowser()
+tsc = ThreadsafeCaller()
 
 @eel.expose
-def get_files(path=''):
-    fb = Filebrowser()
-    fb.connectto(filedialog)
-    print(f'request made in {int(QThread.currentThreadId())}')
-    fb.get(requesttype='files',path=path)
-    return parse_files([])
+def get_files(dlgtype='native',path=''):
+    # c = tsc.make()
+    # print(f'get_files requested in {int(QThread.currentThreadId())}')
+    result=tsc.call(get_files_, dlgtype=dlgtype, path=path)
+    if result['absolutePath']!=False:
+        eel.set_follow_source(result['absolutePath'])
+    return parse_files(result['files'])
 
-def get_files_implementation(path=''):
-    # files, _ = QFileDialog.getOpenFileNames(caption="Select Files", filter="Aperio SVS (*.svs);;CSV Files (*.csv)")
-    # files = ['/Users/Tom/Desktop/wsi_list.csv']
+
+@eel.expose
+def get_dir(dlgtype='native',path=''):
+    # c = tsc.make()
+    # print(f'get_dir requested in {int(QThread.currentThreadId())}')
+    result=tsc.call(get_dir_, dlgtype=dlgtype, path=path)
+    if result['absolutePath']!=False:
+        eel.set_follow_dest(result['absolutePath'])
+
+    if result['directory'] != '':
+        total, used, free = shutil.disk_usage(result['directory'])
+        result['total']=total
+        result['free']=free
+        result['writable']=os.access(result['directory'], os.W_OK)
+
+    return result
+
+@eel.expose
+def test_file_dialog(dlgtype,path=''):
+    return tsc.call(get_files_, dlgtype=dlgtype, path=path)
+
+@eel.expose
+def get_config_path(dlgtype='native',path=''):
+    return tsc.call(get_dir_, dlgtype, path=path)
+
+def get_files_(dlgtype='native', path=''):
+    if path is None:
+        path=''
+    # print(f'get_files processed in {int(QThread.currentThreadId())}')
     dialog = QFileDialog(None)
     dialog.setFileMode(QFileDialog.ExistingFiles)
     dialog.setViewMode(QFileDialog.Detail)
-    dialog.setOption(QFileDialog.DontUseNativeDialog, True)
+    if dlgtype=='qt': # default to native unless qt is explicitly requested
+        dialog.setOption(QFileDialog.DontUseNativeDialog, True)
     dialog.setNameFilters(['Aperio SVS or CSV (*.svs *.csv)'])
     if len(path)>0 and QDir(path).exists():
         dialog.setDirectory(path)
 
     files = []
+    absolutepath=False
     if dialog.exec() == QFileDialog.Accepted:
         dlg_out = dialog.selectedFiles()
         files = dlg_out
-        eel.select_files_browsed_directory(dialog.directory().absolutePath())
-        # print('Accepted',', '.join(files), dialog.directory().absolutePath())
+        absolutepath=dialog.directory().absolutePath()
 
-
-    return parse_files(files)
-
-
-@eel.expose
-def get_dir(path=''):
-    fb = Filebrowser()
-    fb.connectto(filedialog)
-    print(f'request made in {int(QThread.currentThreadId())}')
-    fb.get(requesttype='files',path=path)
-    output= {
-        'directory':'',
-        'total':None,
-        'free':None,
-        'writable':False
+    output = {
+        'files':files,
+        'absolutePath':absolutepath
     }
     return output
 
-def get_dir_implementation(path=''):
-    # directory = QFileDialog.getExistingDirectory(caption="Select Target Directory")
-    
+def get_dir_(dlgtype='native', path='path'):
+    if path is None:
+        path=''
+    # print(f'get_dir processed in {int(QThread.currentThreadId())}')
     dialog = QFileDialog(None)
     dialog.setFileMode(QFileDialog.Directory)
-    # dialog.setOption(QFileDialog.ShowDirsOnly, True)
-    dialog.setOption(QFileDialog.DontUseNativeDialog, True)
+    dialog.setOption(QFileDialog.ShowDirsOnly, True)
+    if dlgtype=='qt': # default to native unless qt is explicitly requested
+        dialog.setOption(QFileDialog.DontUseNativeDialog, True)
     dialog.setViewMode(QFileDialog.Detail)
     if len(path)>0 and QDir(path).exists():
         dialog.setDirectory(path)
 
     directory = ''
+    absolutepath=False
     if dialog.exec() == QFileDialog.Accepted:
         dlg_out = dialog.selectedFiles()
         directory = dlg_out[0]
-        eel.select_dir_browsed_directory(dialog.directory().absolutePath())
-        # print('Accepted',directory,dialog.directory().absolutePath())
+        absolutepath=dialog.directory().absolutePath()
     
     output = {
         'directory':directory,
-        'total':None,
-        'free':None,
-        'writable':False
+        'absolutePath':absolutepath,
     }
 
-    if directory != '':
-        total, used, free = shutil.disk_usage(directory)
-        output['total']=total
-        output['free']=free
-        output['writable']=os.access(directory, os.W_OK)
-
     return output
+
 
 @eel.expose
 def do_copy_and_strip(files):
@@ -494,38 +533,40 @@ def copy_and_strip(file, copyop, index):
 
 
 app=QApplication([]) # create QApplication to enable file dialogs
-# try:
-#     raise ValueError()
-#     eel.init('web')
-#     eel.start('app.html', size=(1000, 600))
-# except Exception: #no chrome installed? Try falling  back to Edge (Windows 10)
-#     try:
-#         if sys.platform in ['win32', 'win64'] and int(platform.release()) >= 10:
-#             eel.init('web')
-#             eel.start('app.html', size=(1000, 600), mode='edge')
-#         else:
-#             raise
-#     except:
-#         # pass
-#         et=EelThread(init='web',url='app.html')
-#         et.start()
 
-#         w = QWebEngineView()
-#         w.resize(1100,800)
-#         w.load(QUrl('http://localhost:8000/app.html'))
-#         w.show()
+useChrome = True
+if useChrome:
+    try:
+        eel.init('web')
+        eel.start('app.html')
+    except Exception: #no chrome installed? Try falling  back to Edge (Windows 10)
+        try:
+            if sys.platform in ['win32', 'win64'] and int(platform.release()) >= 10:
+                eel.init('web')
+                eel.start('app.html', mode='edge')
+            else:
+                raise
+        except:
+            # pass
+            et=EelThread(init='web',url='app.html')
+            et.start()
 
-#         app.exec()
+            w = QWebEngineView()
+            w.resize(1100,800)
+            w.load(QUrl('http://localhost:8000/app.html'))
+            w.show()
 
-et=EelThread(init='web',url='app.html')
-et.start()
+            app.exec()
+else:
+    et=EelThread(init='web',url='app.html')
+    et.start()
 
-w = QWebEngineView()
-w.resize(1100,800)
-w.load(QUrl('http://localhost:8000/app.html'))
-w.show()
+    w = QWebEngineView()
+    w.resize(1100,800)
+    w.load(QUrl('http://localhost:8000/app.html'))
+    w.show()
 
-app.exec()
+    app.exec()
 
 app.exit() # quit the QApplication
 

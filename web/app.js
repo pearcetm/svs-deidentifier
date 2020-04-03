@@ -33,20 +33,21 @@ $(function(){
 		faileddlg.data('target',el);
 		overlay.trigger('activate',[faileddlg]);
 	});
-	$('.overlay-dialog.options .markdown').load('/options');
+	
 
 	// Defer final setup until end of current event loop
 	setTimeout(function(){
-		setup_options_dialog()
 		overlay.trigger('activate',[optionsdlg])
 	},0)
 	
 	
 	function get_files(callback){
-		eel.get_files(get_select_files_browsed_directory())(callback)
+		var dlgtype=localStorage.getItem('fd-type')
+		eel.get_files(dlgtype,get_source_startpath())(callback)
 	}
 	function get_dir(callback){
-		eel.get_dir(get_select_dir_browsed_directory())(callback)
+		var dlgtype=localStorage.getItem('fd-type')
+		eel.get_dir(dlgtype,get_dest_startpath())(callback)
 	}
 
 	eel.expose(update_progress)
@@ -390,26 +391,113 @@ $(function(){
 	    }
 	})();
 
-	function setup_options_dialog(){
+	async function test_file_dialog(type){
+		// $('body').attr('disabled',true)
+		// console.log('testing file dialog type='+type)
+		$('body').addClass('no-pointer-events');
+		var output = await eel.test_file_dialog(type)()
+		console.log('finished test', output)
+		$('body').removeClass('no-pointer-events')
 		
+		// $('body').attr('disabled',false)
 	}
-
+	async function get_config_path(path, callback){
+		$('body').addClass('no-pointer-events');
+		var output = await eel.get_config_path(localStorage.getItem('fd-type'),path)()
+		console.log('finished getting config path', output)
+		$('body').removeClass('no-pointer-events')
+		callback(output)
+	}
+	function setup_options_dialog(){
+		console.log('setup_option_dialog called')
+		$('.options .radio').each(function(i,e){
+			$(e).prepend(
+			$('<input>',{type:'radio',required:true}).on('change',function(){
+				// console.log('change')
+				var d = $(this).data()
+				localStorage.setItem(d.store,d.val)
+			}).attr('name',$(e).data('store')).data($(e).data()) ); 
+		});
+		$('.options [data-store="fd-type"]')
+			.append($('<span>',{class:'test-fd'}).text('[test]').on('click',function(){
+				// console.log('click')
+				var type=$(this).closest('[data-store="fd-type"]').data('val');
+				test_file_dialog(type)
+			}));
+		$('.options [data-store^="fd-stay-"]')
+			.append($('<span>',{class:'test-fd'}).text('[choose]').on('click',function(){
+				var p=$(this).closest('[data-store]')
+				var store=p.data('store');
+				var dir = get_config_path(localStorage.getItem(store),function(dir){
+					localStorage.setItem(store,dir.absolutePath)
+					console.log('setting',store,dir.absolutePath)
+					p.find('.selected-path').text(dir.absolutePath);
+				});
+				
+			}));
+		$('.options .path').each(function(){
+			var p = $(this);
+			var store=p.data('store');
+			var dir = localStorage.getItem(store);
+			p.prepend($('<span>',{class:'selected-path'}).text(dir?dir:''));
+		});
+		var groups=$('.options input:radio').toArray().reduce(function(a,e){
+			if(a.indexOf(e.name)==-1) a.push(e.name);
+			return a;
+		},[]);
+		var unset_status = groups.map(function(e){
+			var unset = $('.options input:radio[name="'+e+'"]')
+				.filter(function(i,e){
+					var d = $(e).data();
+					if(localStorage.getItem(d.store)==d.val){
+						console.log('setting '+d.store+' from localStorage to '+d.val)
+						$(e).prop('checked',true);
+						return true;
+					}
+					return false; 
+				}).length==0
+			if(unset){
+				var r = $('.options input:radio[name="'+e+'"]');
+				console.log('setting first item to checked')
+				r.first().click()
+			}
+			return unset;
+		});
+		var any_unset=unset_status.filter(function(e){return e==true;}).length>0
+		if(any_unset){
+			$('.options .options-message').addClass('unset')
+		}
+		else{
+			$('.options .options-message').removeClass('unset')
+		}
+	}
+	
+	function refreshoptions(){
+		$('.overlay-dialog.options .markdown').load('/options',null,setup_options_dialog);
+	}
+	$.ajaxSetup ({
+	    // Disable caching of AJAX responses
+	    cache: false
+	});
+	refreshoptions()
 	//Local storage for persistence of user choices
 
-	eel.expose(select_dir_browsed_directory)
-	function select_dir_browsed_directory(dir){
-		localStorage.setItem('select_dir_browsed_directory',dir)
+	eel.expose(set_follow_dest)
+	function set_follow_dest(dir){
+		localStorage.setItem('fd-follow-dest',dir);
 	}
-	eel.expose(select_files_browsed_directory)
-	function select_files_browsed_directory(dir){
-		localStorage.setItem('select_files_browsed_directory',dir)
+	eel.expose(set_follow_source)
+	function set_follow_source(dir){
+		localStorage.setItem('fd-follow-source',dir)
 	}
-	function get_select_dir_browsed_directory(){
-		var path=localStorage.getItem('select_dir_browsed_directory');
+	function get_dest_startpath(){
+		var beh = localStorage.getItem('fd-behavior')
+		var path = localStorage.getItem('fd-'+beh+'-dest')
 		return path?path:'';
 	}
-	function get_select_files_browsed_directory(){
-		var path=localStorage.getItem('select_files_browsed_directory');
+	function get_source_startpath(){
+		var beh = localStorage.getItem('fd-behavior')
+		var path = localStorage.getItem('fd-'+beh+'-source')
 		return path?path:'';
 	}
 })

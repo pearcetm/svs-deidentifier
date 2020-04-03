@@ -5,12 +5,18 @@ body{
 	width:100vw;
 	height:100vh;
 	margin:0;
-	padding:10px;
+	padding:=0;
 	text-align: center;
 	overflow:auto;
 	position:fixed;
 	left:0;
 	top:0;
+}
+.body-content{
+	padding:20px;
+}
+.no-pointer-events{
+	pointer-events:none;
 }
 .label{
 	color:gray;
@@ -156,13 +162,13 @@ body{
 .overlay-dialogs{
 	display:none;
 }
-.destination::before{
+.dest-selection .destination::before{
 	content:'Copy to: ';
 	font-weight:bold;
 	color:gray;
 	font-size:0.8em;
 }
-.destination:empty::after{
+.dest-selection .destination:empty::after{
 	content:'Select a destination';
 	font-style:italic;
 	color:darkred;
@@ -355,4 +361,60 @@ body{
 .error-message{
 	color:red;
 	font-weight:bold;
+}
+.options{
+	width:100vw;
+	height:100vh;
+	overflow:auto;
+	position:relative;
+}
+.options .refresh{
+	position:absolute;
+	top:5px;
+	right:5px;
+}
+.options .refresh::before{
+	content:'Refresh';
+}
+.options .refresh.refreshing::before{
+	content:'Pause refreshing';
+}
+.options{
+	padding:20px;
+	text-align:left;
+}
+.options .markdown>ul{
+	padding-left:40px;
+	padding-right:40px;
+}
+.options .markdown>ul>li{
+	border:thin gray solid;
+	border-radius:10px;
+	padding:10px;
+}
+.options li{
+	list-style-type:none;
+}
+.options .test-fd{
+	margin-left:0.4em;
+	color:darkblue;
+	text-decoration:underline;
+	cursor:pointer;
+}
+.options input[type=radio]{
+	margin-right:0.4em;
+}
+.options .options-message.unset::before{
+	content:'Not all options were selected; defaults were used. Please review and confirm.';
+	color:darkred;
+	font-style:italic;
+}
+.topbar{
+	position:fixed;
+	left:0;
+	right:0;
+	top:0;
+	height:1em;
+	overflow:hidden;
+	background-color:#4d164b;
 }
