@@ -180,9 +180,13 @@ $(function(){
 		var fileset = $('<div>',{class:'fileset'}).appendTo('#filelist');
 		var h = $('<div>',{class:'columns fileset-header'}).appendTo(fileset);
 
-		var h1=$('<div>').appendTo(h).append($('<h4>').html('Files to copy: <span class="num-files"></span>'));
-		var h2=$('<div>').appendTo(h).append($('<h4>').html('Target: <span class="target filepath"></span>'));
-		var h3=$('<div>').appendTo(h).append($('<h4>').html(
+		var h1=$('<div>',{class:'oneline'}).appendTo(h).append($('<h4>').html('Files to copy: <span class="num-files"></span>'));
+		var h2=$('<div>',{class:'columns target-field'}).appendTo(h);
+		$('<h4>',{class:'left-ellipsis-outer'}).appendTo(h2)
+				.append($('<span>',{class:"left-ellipsis-inner target filepath"}));
+
+
+		var h3=$('<div>',{class:'oneline'}).appendTo(h2).append($('<h4>').html(
 			'Total size:<span class="totalsize"></span> (<span class="freespace"></span> available)'));
 
 		$('<button>',{class:'add-files'}).text('+').on('click',function(){
@@ -198,7 +202,7 @@ $(function(){
 				}
 				overlay.trigger('inactivate');
 			} })(fileset))
-		}).insertAfter(h2.find('.target'));
+		}).insertBefore(h3);
 
 		$('<button>',{class:'clear-fileset remove-button'}).text('X').on('click',function(){
 			fileset.remove();
@@ -224,9 +228,10 @@ $(function(){
 	}
 	function make_file_row(v){
 		var row=$('<div>',{class:'columns file'});
-		var l = $('<div>',{class:'columns'}).appendTo(row);
+		var l = $('<div>',{class:'columns source'}).appendTo(row);
 		var r = $('<div>',{class:'columns'}).appendTo($('<div>').appendTo(row));
-		$('<div>',{class:'filepath sourcefile'}).text(v.file).data('file',v.file).appendTo(l)
+		var leo=$('<div>',{class:'left-ellipsis-outer'}).appendTo(l);
+		$('<div>',{class:'filepath sourcefile left-ellipsis-inner'}).text(v.file).data('file',v.file).appendTo(leo);
 		$('<div>',{class:'filesize'}).append(byteval(v.filesize)).data('filesize',v.filesize).appendTo(l)
 		var fd=$('<div>',{class:'filedest'}).appendTo(r);
 		$('<input>',{class:'dest', placeholder:'Enter a file name'}).val(v.destination).appendTo(fd)

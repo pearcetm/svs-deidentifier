@@ -68,7 +68,7 @@ body{
 .fileset-header>div{
 	margin-right:1em;
 }
-.fileset-header>div:nth-of-type(1){
+/*.fileset-header>div:nth-of-type(1){
 	white-space: nowrap;
 	flex-shrink: 0;
 }
@@ -78,7 +78,7 @@ body{
 }
 .fileset-header>div:nth-of-type(4){
 	flex-grow:1;
-}
+}*/
 .columns{
 	text-align:left;
 	display:flex;
@@ -87,11 +87,12 @@ body{
 .file>div{
 	padding:3px;
 	flex:1 1 0px;
+	width:0;
 }
 .filepath{
 	flex:1 1 0px;
 }
-.sourcefile::before{
+.source::before{
 	content:'File: ';
 	font-size:0.8em;
 	font-weight:bold;
@@ -417,4 +418,26 @@ body{
 	height:1em;
 	overflow:hidden;
 	background-color:#4d164b;
+}
+.target-field{
+	flex:1 1 0;
+	width:0;
+}
+.target-field::before{
+	content:'Target:' ;
+	color:gray;
+	font-weight:bold;
+	font-size:0.9em;
+}
+.target-field .target{
+	flex:1;
+	width:0;
+}
+.change-target{
+	flex:0;
+	margin-right:1em;
+}
+.oneline{
+	white-space: nowrap;
+	flex-shrink: 0;
 }
