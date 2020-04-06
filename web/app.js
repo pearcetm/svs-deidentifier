@@ -1,9 +1,5 @@
 $(function(){
 
-	// eel.expose(hello)
-	// function hello(msg){
-	// 	$('body').append($('<div>',{class:'red'}).text(msg))
-	// }
 	var filesep = '/';
 	var overlay=$('.overlay');
 	var targetdlg=$('.overlay-dialog.select-target');
