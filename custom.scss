@@ -1,0 +1,50 @@
+/*!
+ * Bootstrap v4.1.3 (https://getbootstrap.com)
+ * Copyright 2011-2018 The Bootstrap Authors
+ * Copyright 2011-2018 Twitter, Inc.
+ * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+ 
+ * Modified by Thomas Pearce 
+ * command line: sass --watch custom.scss web/custombootstrap.css
+
+ */
+
+// Required
+@import "bootstrap-4.1.3/scss/functions";
+@import "bootstrap-4.1.3/scss/variables";
+@import "bootstrap-4.1.3/scss/mixins";
+
+// Optional
+@import "bootstrap-4.1.3/scss/root";
+//@import "bootstrap-4.1.3/scss/reboot";
+//@import "bootstrap-4.1.3/scss/type";
+//@import "bootstrap-4.1.3/scss/images";
+//@import "bootstrap-4.1.3/scss/code";
+//@import "bootstrap-4.1.3/scss/grid";
+//@import "bootstrap-4.1.3/scss/tables";
+//@import "bootstrap-4.1.3/scss/forms";
+//@import "bootstrap-4.1.3/scss/buttons";
+@import "bootstrap-4.1.3/scss/transitions";
+//@import "bootstrap-4.1.3/scss/dropdown";
+//@import "bootstrap-4.1.3/scss/button-group";
+//@import "bootstrap-4.1.3/scss/input-group";
+//@import "bootstrap-4.1.3/scss/custom-forms";
+@import "bootstrap-4.1.3/scss/nav";
+@import "bootstrap-4.1.3/scss/navbar";
+//@import "bootstrap-4.1.3/scss/card";
+//@import "bootstrap-4.1.3/scss/breadcrumb";
+//@import "bootstrap-4.1.3/scss/pagination";
+//@import "bootstrap-4.1.3/scss/badge";
+//@import "bootstrap-4.1.3/scss/jumbotron";
+//@import "bootstrap-4.1.3/scss/alert";
+//@import "bootstrap-4.1.3/scss/progress";
+//@import "bootstrap-4.1.3/scss/media";
+//@import "bootstrap-4.1.3/scss/list-group";
+//@import "bootstrap-4.1.3/scss/close";
+//@import "bootstrap-4.1.3/scss/modal";
+@import "bootstrap-4.1.3/scss/tooltip";
+//@import "bootstrap-4.1.3/scss/popover";
+//@import "bootstrap-4.1.3/scss/carousel";
+@import "bootstrap-4.1.3/scss/utilities";
+//@import "bootstrap-4.1.3/scss/print";
+

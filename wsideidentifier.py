@@ -131,10 +131,19 @@ class ThreadsafeCaller(QObject):
         return other._callother(func,*args,**kwargs)
 
 
-@route('/options')
-def options():
-    with open('options.md','r') as fp:
+@route('/settings')
+def settings():
+    with open('settings.md','r') as fp:
         return commonmark.commonmark(fp.read())
+
+@route('/readme')
+def readme():
+    with open('README.md','r') as fp, open('help.md','r') as hp:
+        d = {
+            'readme':commonmark.commonmark(fp.read()),
+            'help':commonmark.commonmark(hp.read())
+        }
+        return d
 
 # Read/modify TIFF files (as in the SVS files) using tiffparser library (stripped down tifffile lib)
 

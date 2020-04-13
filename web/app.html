@@ -9,86 +9,173 @@
 
         <script type='text/javascript' src='jquery.js'></script>
         <script type='text/javascript' src='/eel.js'></script>
+        <script type='text/javascript' src='copy.js'></script>
+        <script type='text/javascript' src='modify.js'></script>
         <script type='text/javascript' src='app.js'></script>
         
+
+        <script type='text/javascript' src='bootstrap/js/bootstrap.bundle.min.js'></script>
         <script type='text/javascript' src='bootstrap/js/bootstrap.min.js'></script>
         <link href='bootstrap/css/bootstrap.css' rel='stylesheet'>
         <link href='app.css' rel='stylesheet'>
 
     </head>
     <body>
-        <nav class="navbar navbar-expand-sm">
-            <a class="navbar-brand" href="#">Home</a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=    "#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-                <div class="navbar-nav">
-                    <a class="nav-item nav-link" href="#">README</a>
-                    <a class="nav-item nav-link" href="#">Settings</a>
+        <nav>
+            <div id='topbar-tabs' class="nav nav-tabs navbar-expand-sm navbar-light bg-info" role='tablist'>
+                <a class="nav-item nav-link active" data-toggle="tab" href="#home" id='home-tab' role="tab" aria-controls="home" aria-selected="true">Home</a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarCollapse">
+                    <a class="nav-item nav-link" data-toggle="tab" href="#copy-and-delabel" id='copy-tab' role="tab" aria-controls="copy-and-delabel" aria-selected="false">Copy</a>
+                    <a class="nav-item nav-link" data-toggle="tab" href="#delabel-in-place" id='inplace-tab' role="tab" aria-controls="delabel-in-place" aria-selected="false">Modify</a>
+                    <a class="nav-item nav-link" data-toggle="tab" href="#readme" id='open-readme' role="tab" aria-controls="readme" aria-selected="false">Help</a>
+                    <a class="nav-item nav-link" data-toggle="tab" href="#settings" id='open-settings' role="tab" aria-controls="settings" aria-selected="false">Settings</a>
                 </div>
             </div>
+            <!-- </div> -->
         </nav>
-        <div class='body-content'>
-            <h2>Whole Slide Image De-identification Tool for Aperio .SVS files</h2>
-            <div class='header'>
-                <div class='columns steps'>
-                    <div>
-                        <label>Step 1: </label>
-                        <button id='pick-files'>Choose File(s)</button>
-                        <span class='label'>Select .svs files, or a .csv with a file list</span>
-                    </div>
-                    <div>
-                        <label>Step 2: </label>
-                        <button id='do-deidentification'>Copy and remove labels from WSIs</button>
-                    </div>
-                    
-                </div>
+        <div class='tab-content'>
+            <div id='home' class='tab-pane show active' role='tabpanel' aria-labelledby='home-tab'></div>
+            <div id='copy-and-delabel' class='tab-pane' role="tabpanel" aria-labelledby="copy-tab"></div>
+            <div id='delabel-in-place' class='tab-pane' role="tabpanel" aria-labelledby="inplace-tab"></div>
+            <div id='settings' class='tab-pane' role="tabpanel" aria-labelledby="open-settings">
+                <div class='markdown'></div>
+                <div><button class='ok btn btn-primary'>Confirm choices</button></div>
             </div>
-            <div id='filelist'></div>
-            <div class='overlay'>
-                <div class='overlay-background'></div>
-                <div class='overlay-content'>
-                    
-                </div>
-                <div class='overlay-dialogs'>
-                    <div class='overlay-dialog select-target'>
-                        <h3>Select a directory to copy files into</h3>
-                        <h4>Found <span class='num-files'></span> whole slide image<span class='plural-s'>s</span> to de-identify</h4>
-                        
-                        <div class='dest-selection'>
-                            <span class='destination'></span>
-                            <button class='pick-destination'>Choose Folder</button>
-                            <button class='remove-button'>X</button>
-                        </div>
-                        
-                        <div class='buttons'>
-                            <button class='ok btn btn-primary'>OK</button>
-                            <button class='cancel btn btn-primary'>Cancel</button>
-                        </div>
-                    </div>
-
-                    <div class='overlay-dialog choose-file'>
-                        <h3>Opening system file dialog</h3>
-                        <div>Please select a file/folder</div>
-                        <!-- <div>Note: the dialog may open behind other windows, especially on Mac platforms</div> -->
-                    </div>
-
-                    <div class='overlay-dialog failed'>
-                        <h3>Copy and de-identification error</h3>
-                        <h4 class='error-message'></h4>
-                        <div class='buttons'>
-                            <button class='ok btn btn-primary'>Edit and retry?</button>
-                            <button class='cancel btn btn-secondary'>Close</button>
-                        </div>
-                    </div>
-
-                    <div class='overlay-dialog options'>
-                        <div class='markdown'></div>
-                        <div><button class='ok btn btn-primary'>Ok</button></div>
-                    </div>
-
-                </div>
+            <div id='readme' class='tab-pane' role="tabpanel" aria-labelledby="open-readme">
+                <div class='markdown'></div>
             </div>
         </div>
+        
+
+        <div class='overlay'>
+            <div class='overlay-background'></div>
+            <div class='overlay-content'>
+                
+            </div>
+            <div class='overlay-dialogs'>
+                <div class='overlay-dialog select-target'>
+                    <h3>Select a directory to copy files into</h3>
+                    <h4>Found <span class='num-files'></span> whole slide image<span class='plural-s'>s</span> to de-identify</h4>
+                    
+                    <div class='dest-selection'>
+                        <span class='destination'></span>
+                        <button class='pick-destination'>Choose Folder</button>
+                        <button class='remove-button'>X</button>
+                    </div>
+                    
+                    <div class='buttons'>
+                        <button class='ok btn btn-primary'>OK</button>
+                        <button class='cancel btn btn-primary'>Cancel</button>
+                    </div>
+                </div>
+
+                <div class='overlay-dialog choose-file'>
+                    <h3>Opening system file dialog</h3>
+                    <div>Please select a file/folder</div>
+                    <!-- <div>Note: the dialog may open behind other windows, especially on Mac platforms</div> -->
+                </div>
+
+                <div class='overlay-dialog failed'>
+                    <h3>Copy and de-identification error</h3>
+                    <h4 class='error-message'></h4>
+                    <div class='buttons'>
+                        <button class='ok btn btn-primary'>Edit and retry?</button>
+                        <button class='cancel btn btn-secondary'>Close</button>
+                    </div>
+                </div>
+
+                
+            </div>
+        </div>
+        <div class='templates'>
+            <div id='copy-tab-contents'>
+                <h2 class='centered'>Create de-labeled copies of WSIs</h2>
+                <div class='header'>                    
+                    <label>Step 1: </label>
+                    <button class='pick-files'>Choose File(s)</button>
+                    <span class='label'>Select .svs files, or a .csv with a file list</span>
+                </div>
+                <div class='filesetlist'></div>
+                <div class='templates'>
+                    <div class="fileset">
+                        <div>
+                            <label>Step 2: </label><button class='deidentify-fileset' disabled>Copy and remove labels from WSIs</button>
+                        </div>
+                        <div class="columns fileset-header">
+                            <div class="oneline"><h4>Files to copy: <span class="num-files"></span><button class="add-files">+</button></h4></div>
+                            <div class="columns target-field"><h4 class="left-ellipsis-outer"><span class="left-ellipsis-inner target filepath"></span></h4><button class="change-target">Choose</button>
+                                <div class="oneline"><h4>Total size:<span class="totalsize"></span> (<span class="freespace"></span> available)</h4></div>
+                            </div>
+                        </div>
+                        <button class="clear-fileset remove-button">X</button>
+                        <div class="filelist"></div>
+                    </div>
+                    <div class="columns file">
+                        <div class="columns source">
+                            <div class="left-ellipsis-outer">
+                                <div class="filepath sourcefile left-ellipsis-inner"></div>
+                            </div>
+                            <div class="filesize"></div>
+                        </div>
+                        <div>
+                            <div class="columns">
+                                <div class="filedest">
+                                    <input class="dest" placeholder="Enter a file name">
+                                </div>
+                                <button class="remove-button" title="Remove item">X</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id='modify-tab-contents'>
+                <h2 class='centered'>Delete label images from existing WSIs</h2>
+                <div class='header'>                    
+                    <label>Step 1: </label>
+                    <button class='pick-files'>Choose File(s)</button>
+                    <span class='label'>Select .svs files, or a .csv with a file list</span>
+                </div>
+                <div class='filesetlist'></div>
+                <div class='templates'>
+                    <div class="fileset">
+                        <div>
+                            <label>Step 2: </label><button class='deidentify-fileset' disabled>Delete labels from WSIs</button>
+                        </div>
+                        <div class="columns fileset-header">
+                            <div class="oneline">
+                                <h4>Files to de-label: <span class="num-files"></span>
+                                    <button class="add-files">+</button>
+                                </h4>
+                            </div> 
+                        </div>
+                        <button class="clear-fileset remove-button">X</button>
+                        <div class="filelist"></div>
+                    </div>
+                    <div class="columns file">
+                        <div class="source">
+                            <div class="left-ellipsis-outer">
+                                <div class="filepath sourcefile left-ellipsis-inner"></div>
+                            </div>
+                            
+                        </div>
+                        <div class="label"></div>
+                        <div class="macro"></div>
+                        <button class="remove-button" title="Remove item">X</button>
+                        
+                    </div>
+                </div>
+            </div>
+
+            <div id='home-tab-contents'>
+                <h2>De-identification Tool for Aperio .SVS whole slide images</h2>
+                <p>How does this work?</p>
+
+            </div>
+
+        </div>    
     </body>
 </html> 

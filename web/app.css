@@ -2,18 +2,18 @@
 	box-sizing:border-box;
 }
 body{
-	width:100vw;
-	height:100vh;
+	/*width:100vw;
+	height:100vh;*/
 	margin:0;
 	padding:=0;
-	text-align: center;
-	overflow:auto;
+	text-align: left;
+	/*overflow:auto;
 	position:fixed;
 	left:0;
-	top:0;
+	top:0;*/
 }
-.body-content{
-	padding:20px;
+.centered{
+	text-align: center;
 }
 .no-pointer-events{
 	pointer-events:none;
@@ -363,52 +363,36 @@ body{
 	color:red;
 	font-weight:bold;
 }
-.options{
-	width:100vw;
-	height:100vh;
-	overflow:auto;
-	position:relative;
-}
-.options .refresh{
-	position:absolute;
-	top:5px;
-	right:5px;
-}
-.options .refresh::before{
-	content:'Refresh';
-}
-.options .refresh.refreshing::before{
-	content:'Pause refreshing';
-}
-.options{
-	padding:20px;
-	text-align:left;
-}
-.options .markdown>ul{
+
+#settings .markdown>ul{
 	padding-left:40px;
 	padding-right:40px;
 }
-.options .markdown>ul>li{
+#settings .markdown>ul>li{
 	border:thin gray solid;
 	border-radius:10px;
 	padding:10px;
 }
-.options li{
+#settings li{
 	list-style-type:none;
 }
-.options .test-fd{
+#settings .test-fd{
 	margin-left:0.4em;
 	color:darkblue;
 	text-decoration:underline;
 	cursor:pointer;
 }
-.options input[type=radio]{
+#settings input[type=radio]{
 	margin-right:0.4em;
 }
-.options .options-message.unset::before{
-	content:'Not all options were selected; defaults were used. Please review and confirm.';
+#settings .settings-message.unset::before{
+	content:'Not all settings were selected; defaults were used. Please review and confirm.';
 	color:darkred;
 	font-style:italic;
+}
+#settings h4{
+	margin:0;
+	text-decoration:underline;
 }
 .topbar{
 	position:fixed;
@@ -440,4 +424,19 @@ body{
 .oneline{
 	white-space: nowrap;
 	flex-shrink: 0;
+}
+.readme-html{
+	margin-top:2em;
+	border-top:thin gray solid;
+}
+
+.templates{
+	display:none;
+}
+
+.tab-content{
+	padding:0 2em;
+	max-width:960px;
+	margin:0 auto;
+	overflow:auto;
 }
