@@ -4,18 +4,14 @@ $(function(){
 	var targetdlg=$('.overlay-dialog.select-target');
 	var filedlg=$('.overlay-dialog.choose-file');
 	var faileddlg=$('.overlay-dialog.failed');
+	var confirmdlg=$('.overlay-dialog.confirm');
 	
 
 	$('.dest-selection .remove-button').on('click',function(){
 		$(this).parent().removeAttr('selected').find('.destination').empty();
 		targetdlg.find('.ok').attr('disabled',true);
 	});
-	$('body').on('click','.progress-monitor.failed',function(e){
-		var el = $(this);
-		faileddlg.find('.error-message').text(el.data('failure-message'));
-		faileddlg.data('target',el);
-		overlay.trigger('activate',[faileddlg]);
-	});
+	
 	
 
 	function get_files(callback){
@@ -25,6 +21,14 @@ $(function(){
 	function get_dir(callback){
 		var dlgtype=localStorage.getItem('fd-type')
 		eel.get_dir(dlgtype,get_dest_startpath())(callback)
+	}
+	function get_inplace_files(callback){
+		var dlgtype=localStorage.getItem('fd-type')
+		eel.get_inplace_files(dlgtype,get_source_startpath())(callback)
+	}
+	function get_inplace_dir(callback){
+		var dlgtype=localStorage.getItem('fd-type')
+		eel.get_inplace_dir(dlgtype,get_dest_startpath())(callback)
 	}
 
 	
@@ -236,7 +240,7 @@ $(function(){
 		if(any_unset){
 			$('#settings .settings-message').addClass('unset');
 			// Defer switching to the settings tab until end of current event loop
-			setTimeout(opensettings,0)
+			//setTimeout(opensettings,0)
 		}
 		else{
 			$('#settings .settings-message').removeClass('unset')
@@ -255,15 +259,12 @@ $(function(){
 		observer.observe(e,{attributes:true});
 	})
 	
-	function refreshsettings(){
-		$('#settings .markdown').load('/settings',null,setup_settings_dialog);
-	}
 		
 	$.ajaxSetup ({
 	    // Disable caching of AJAX responses
 	    cache: false
 	});
-	refreshsettings();
+	$('#settings .markdown').load('/settings',null,setup_settings_dialog);
 	$.ajax({
 		type:'GET',
 		url:'/readme', 
@@ -310,11 +311,17 @@ $(function(){
 		overlay:$('.overlay'),
 		uniqueID:uniqueID,
 		filedlg:filedlg,
+		faileddlg:faileddlg,
 		targetdlg:targetdlg,
+		confirmdlg:confirmdlg,
 		get_files:get_files,
 		get_dir:get_dir,
+		get_inplace_files:get_inplace_files,
+		get_inplace_dir:get_inplace_dir,
 		set_destination,
 	}
 	Copy('#copy-and-delabel',exportvars);//setup copy interface
+	Modify('#delabel-in-place',exportvars);//setup copy interface
+
 })
 

@@ -401,7 +401,7 @@ body{
 	top:0;
 	height:1em;
 	overflow:hidden;
-	background-color:#4d164b;
+	background-color:orchid;
 }
 .target-field{
 	flex:1 1 0;
@@ -439,4 +439,57 @@ body{
 	max-width:960px;
 	margin:0 auto;
 	overflow:auto;
+}
+.file .status{
+	flex-grow:0;
+	width:5em;
+}
+.file.has-label .label-status::before{
+	content:'Label';
+	margin:0.5em;
+	font-weight:bold;
+}
+.file.has-macro .macro-status::before{
+	content:'Macro';
+	margin:0.5em;
+	font-weight:bold;
+}
+.file:not(.has-label) .label-status::before{
+	content:'Label';
+	margin:0.5em;
+	font-weight:normal;
+	color:gray;
+	opacity:0.5;
+	text-decoration: line-through;
+}
+.file:not(.has-macro) .macro-status::before{
+	content:'Macro';
+	margin:0.5em;
+	font-weight:normal;
+	opacity:0.5;
+	text-decoration: line-through;
+}
+.file.modified .file-status::before{
+	content:'Success!';
+	margin:0.5em;
+	font-weight:normal;
+	color:darkgreen;
+}
+.file.modified.failed .file-status::before{
+	content:'Error';
+	margin:0.5em;
+	font-weight:bold;
+	font-style:italic;
+}
+.fileset-header .modify-results{
+	display:none;
+	margin-top:5px;
+	padding-top:5px;
+	border-top:thin gray solid;
+}
+.overlay-dialog.confirm{
+	text-align:center;
+}
+#home-tab-contents h3{
+	margin:0.2em 0;
 }

@@ -11,6 +11,12 @@ function Copy(page,imports){
 	var get_dir = imports.get_dir;
 	var set_destination = imports.set_destination;
 	
+	$('body').on('click','.progress-monitor.failed',function(e){
+		var el = $(this);
+		faileddlg.find('.error-message').text(el.data('failure-message'));
+		faileddlg.data('target',el);
+		overlay.trigger('activate',[faileddlg]);
+	});
 
 	function pick_destination(){
 		overlay.trigger('activate',[filedlg])

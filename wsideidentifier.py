@@ -325,6 +325,25 @@ def parse_files(files):
     # print('File list:', filelist)
     return filelist
 
+def inplace_info(f):
+    with open(f['file'],'r+b') as fp:
+        f['writable']=fp.writable()
+        t = tiffparser.TiffFile(fp)
+        label = [page for page in t.pages if 'label' in page.description]
+        macro = [page for page in t.pages if 'macro' in page.description]
+        f['has_label']=len(label)>0
+        f['has_macro']=len(macro)>0
+
+def parse_inplace_files(files):
+    fs=parse_files(files);
+    [inplace_info(f) for f in fs['aperio']]
+    # [print(f'{f}----\n') for f in fs['aperio']]
+    filelist={'aperio':[f for f in fs['aperio'] if f['writable']==True],
+              'readonly':[f for f in fs['aperio'] if f['writable']==False],
+              'invalid':fs['invalid']}
+    # output = {'aperio':} // check if aperio files are writable here and add that to the output
+    return filelist
+
 # File Dialog methods
 # use Filebrowser objects for thread safety via signal-slot mechanisms
 
@@ -356,6 +375,35 @@ def get_dir(dlgtype='native',path=''):
         result['writable']=os.access(result['directory'], os.W_OK)
 
     return result
+
+@eel.expose
+def get_inplace_files(dlgtype='native',path=''):
+    # c = tsc.make()
+    # print(f'get_files requested in {int(QThread.currentThreadId())}')
+    result=tsc.call(get_files_, dlgtype=dlgtype, path=path)
+    if result['absolutePath']!=False:
+        eel.set_follow_source(result['absolutePath'])
+    return parse_inplace_files(result['files'])
+
+
+@eel.expose
+def get_inplace_dir(dlgtype='native',path=''):
+    # c = tsc.make()
+    # print(f'get_dir requested in {int(QThread.currentThreadId())}')
+    result=tsc.call(get_dir_, dlgtype=dlgtype, path=path)
+    if result['absolutePath']!=False:
+        eel.set_follow_dest(result['absolutePath'])
+
+    print('directory chosen:',result['directory'])
+    files = [os.path.join(dp, f) for dp, dn, filenames in os.walk(result['directory'])
+                              for f in filenames if os.path.splitext(f)[1].lower() == '.svs']
+    # if result['directory'] != '':
+    #     total, used, free = shutil.disk_usage(result['directory'])
+    #     result['total']=total
+    #     result['free']=free
+    #     result['writable']=os.access(result['directory'], os.W_OK)
+
+    return parse_inplace_files(files)
 
 @eel.expose
 def test_file_dialog(dlgtype,path=''):
@@ -435,6 +483,19 @@ def do_copy_and_strip(files):
         threading.Thread(target=copy_and_strip, args=[f, copyop, index]).start()
     
     return 'OK'
+
+@eel.expose
+def do_strip_in_place(file):
+    try:
+        print(f'Deidentifying {file}...')
+        delete_associated_image(file,'label')
+        delete_associated_image(file,'macro')
+        print ("Stripped", file)
+    except Exception as e:
+        print(f'Exception deidentifying {file}: {e}')
+        return 'There was a problem deleting associated images from this file'
+    
+    return 'ok'
 
 @eel.expose
 def check_free_space(directory):

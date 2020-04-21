@@ -3,56 +3,25 @@ function Modify(page,imports){
 	//"import" functions/objects from the main app script that calls this module
 	var filesep = '/';
 	var filedlg = imports.filedlg;
-	var targetdlg = imports.targetdlg;	
+	var targetdlg = imports.targetdlg;
+	var confirmdlg = imports.confirmdlg;	
 	var byteval = imports.byteval;
 	var overlay = imports.overlay;
 	var uniqueID = imports.uniqueID;
-	var get_files = imports.get_files;
-	var get_dir = imports.get_dir;
+	var get_inplace_files = imports.get_inplace_files;
+	var get_inplace_dir = imports.get_inplace_dir;
 	var set_destination = imports.set_destination;
 	
+	confirmdlg.find('.cancel').on('click',function(){overlay.trigger('inactivate')});
 
-	// function pick_destination(){
-	// 	overlay.trigger('activate',[filedlg])
-	// 	get_dir(set_destination)
-	// }
-	eel.expose(update_progress)
-	function update_modify_process(data){
-		//console.log(data)
-		
-		$.each(data.finalized, function(i,e){
-			// console.log('Finalized set:',e);
-			var el=page.find('#'+e.id)
-			el.addClass('modified delabeled');
-			if(e.failed){
-				el.addClass('failed').data('failure-message',e.failure_message);
-			}
-		});
-		update_fileset_header(el.closest('.fileset'));
-	}
-
-	// function progress_monitor(e){
-	// 	var p = $('<div>',{class:'columns progress-monitor',id:e.attr('id')});
-	// 	var src=$('<div>',{class:'progress-src left-ellipsis-outer'}).appendTo(p);
-	// 	$('<span>',{class:'filepath left-ellipsis-inner'}).appendTo(src).text(e.find('.sourcefile').data('file'))
-	// 	var rep = $('<div>',{class:'progress-report'}).appendTo(p)
-	// 	var current = $('<span>',{class:'current update'}).appendTo(rep);
-	// 	var total = $('<span>',{class:'total update'}).appendTo(rep);
-	// 	var percent = $('<span>',{class:'percent update'}).appendTo(rep);
-	// 	var dest=$('<div>',{class:'progress-dest requested-dest left-ellipsis-outer'}).appendTo(p);
-	// 	$('<span>',{class:'filepath left-ellipsis-inner'}).appendTo(dest).text(e.data('requested-destination'));
-
-	// 	$('<progress>',{max:1,value:0}).prependTo(rep);
-
-	// 	var filesize=e.find('.filesize').data('filesize');
-	// 	total.append(byteval(filesize)).data('filesize',filesize);
-	// 	current.append(byteval(0, total.find('.byteval').data('units')));
-	// 	percent.text('0');
-
-	// 	p.data('original',e);
-	// 	return p;
-	// }
 	
+	function ask_confirmation(fileset){
+		confirmdlg.find('.ok').off('click').on('click',function(){
+			overlay.trigger('inactivate');
+			do_deidentification(fileset);
+		});
+		overlay.trigger('activate',[confirmdlg]);
+	}
 
 	function do_deidentification(fileset){
 		
@@ -62,16 +31,24 @@ function Modify(page,imports){
 		files.prependTo(fileset.find('.filelist'));
 
 		console.log('Deidentifying files:',files.length)
-		var fileinfo=files.map(function(i,e){
+		fileset.find('.modify-results').show();
+		fileset.find('.deidentify-fileset').attr('disabled',true);//prevent double clicks
+		var fileinfo=files.each(function(i,e){
 			e=$(e);
-			var basedest=fileset.find('.target').data('destination').directory + filesep;
-			var id=uniqueID();
-			e.attr('id',id);
-			var source=e.find('.filepath').data('file');
-			return {source:source,id:id}
-		}).toArray();
+			var source=e.data('file');
+			console.log('stripping',source);
+			eel.do_strip_in_place(source)( (function(fobj,src,fs){
+				return function(status){
+					console.log('done with',src,source)
+					fobj.addClass('modified');
+					if(status=='ok')fobj.removeClass('has-label').removeClass('has-macro');
+					else fobj.addClass('failed').data('failure-message',status);
+					update_fileset_header(fs);
+				}
+			})(e,source,fileset));
+		});
 		// console.log('file info',fileinfo)
-		eel.do_copy_and_strip(fileinfo);
+		
 	}
 
 	function add_new_fileset(fileinfo){
@@ -80,19 +57,16 @@ function Modify(page,imports){
 	}
 	function update_fileset_header(fileset){
 		var h = fileset.find('.fileset-header');
+		h.find('.num-files').text(fileset.find('.file:not(.modified)').length);
+		h.find('.num-both').text(fileset.find('.file:not(.modified).has-label.has-macro').length);
+		h.find('.num-labels').text(fileset.find('.file:not(.modified).has-label:not(.has-macro)').length);
+		h.find('.num-macros').text(fileset.find('.file:not(.modified).has-macro:not(.has-label)').length);
+		h.find('.num-neither').text(fileset.find('.file:not(.modified):not(.has-label):not(.has-macro)').length);
+		h.find('.num-succeeded').text(fileset.find('.file.modified:not(.failed)').length);
+		h.find('.num-failed').text(fileset.find('.file.failed').length);
 		
-		h.find('.totalsize').empty().append(byteval(ts));
-		h.find('.num-files').text(fileset.find('.file').length);
-		if(info){
-			//var freespace = info.free;
-			//h.find('.freespace').empty().append(byteval(freespace));
-			eel.check_free_space(info.directory)(function(free){set_freespace(fileset,free)});
-			target.text(info.directory);
-		}
 	}
-	function set_freespace(fileset,freespace){
-		fileset.find('.freespace').empty().append(byteval(freespace));
-	}
+	
 	function set_fileset_destination(fileset,destination){
 		fileset.find('.fileset-header .target').data('destination',destination);
 		update_fileset_header(fileset);
@@ -105,16 +79,7 @@ function Modify(page,imports){
 		var fileset = page.find('.templates .fileset').clone().appendTo(page.find('.filesetlist'));
 		fileset.find('.add-files').on('click',function(){
 			overlay.trigger('activate',[filedlg])
-			get_files((function(f){return function(files){add_files_to_fileset(files,f)} })(fileset))
-		});
-		fileset.find('.change-target').on('click',function(){
-			overlay.trigger('activate',[filedlg])
-			get_dir((function(f){return function(d){
-				if(d.directory !==''){
-					set_fileset_destination(f,d);
-				}
-				overlay.trigger('inactivate');
-			} })(fileset))
+			get_inplace_files((function(f){return function(files){add_files_to_fileset(files,f)} })(fileset))
 		});
 		fileset.find('.clear-fileset').on('click',function(){
 			fileset.remove();
@@ -128,6 +93,9 @@ function Modify(page,imports){
 		if(fileinfo.invalid.length>0){
 			invalid_files(fileinfo.invalid);
 		}
+		if(fileinfo.readonly.length>0){
+			readonly_files(fileinfo.invalid);
+		}
 		if(fileinfo.aperio.length>0){
 			if(typeof fileset == 'undefined'){
 				fileset = setup_fileset();
@@ -140,10 +108,14 @@ function Modify(page,imports){
 		return fileset;
 	}
 	function make_file_row(v){
-		var row = page.find('.templates .file').clone();
-		row.find('.sourcefile').text(v.file).data('file',v.file);
-		row.find('.filesize').append(byteval(v.filesize)).data('filesize',v.filesize);
-		row.find('input.dest').val(v.destination);
+		var row = page.find('.templates .file').clone().data('file',v.file);
+		if(v.has_label){
+			row.addClass('has-label');
+		}
+		if(v.has_macro){
+			row.addClass('has-macro');
+		}
+		row.find('.sourcefile').text(v.file);
 		row.find('.remove-button').on('click',function(){
 			var fileset=row.closest('.fileset')
 			row.remove();
@@ -167,17 +139,34 @@ function Modify(page,imports){
 			row.text(v.file)
 		})
 	}
+	function readonly_files(list){
+		var fileset = $('<div>',{class:'fileset readonly invalid'}).appendTo(page.find('.filesetlist'));
+		var h = $('<div>',{class:'columns fileset-header readonly invalid'}).appendTo(fileset);
+		var l = $('<div>').appendTo(h);
+		var r = $('<div>').appendTo(h);
+		var clear=$('<button>',{class:'clear-invalid clear-fileset'}).text('Remove').appendTo(r);
+		clear.on('click',function(){fileset.remove()});
+
+		$('<h4>').html('The following files are READ ONLY and cannot be modified').appendTo(l);
+		
+		$.each(list, function(i,v){
+			var row=$('<div>',{class:'columns file filepath invalid'}).appendTo(fileset);
+			row.text(v.file)
+		})
+	}
 
 	page.find('.pick-files').on('click',function(){
 		overlay.trigger('activate',[filedlg]);
-		targetdlg.data('pick-destination-function',pick_destination);
-		targetdlg.data('set-destination-function',set_fileset_destination);
-		get_files(add_new_fileset);
+		get_inplace_files(add_new_fileset);
 	});
-	page.find('.pick-destination').on('click',pick_destination)
+	page.find('.pick-folder').on('click',function(){
+		overlay.trigger('activate',[filedlg]);
+		get_inplace_dir(add_new_fileset);
+	});
+	
 	page.on('click','.deidentify-fileset',function(){
 		var fileset = $(this).closest('.fileset');
-		do_deidentification(fileset);
+		ask_confirmation(fileset);
 	});
 
 	return this;

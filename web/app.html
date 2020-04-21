@@ -22,7 +22,7 @@
     </head>
     <body>
         <nav>
-            <div id='topbar-tabs' class="nav nav-tabs navbar-expand-sm navbar-light bg-info" role='tablist'>
+            <div id='topbar-tabs' class="nav nav-tabs navbar-expand-sm navbar-light bg-light" role='tablist'>
                 <a class="nav-item nav-link active" data-toggle="tab" href="#home" id='home-tab' role="tab" aria-controls="home" aria-selected="true">Home</a>
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -87,6 +87,12 @@
                     </div>
                 </div>
 
+                <div class='overlay-dialog confirm'>
+                    <h3>WARNING: this is PERMANENT - are you sure?</h3>
+                    <div><button class='ok btn btn-primary'>Yes, I know what I'm doing</button></div>
+                    <div>OR</div>
+                    <div><button class='cancel btn btn-primary'>Nevermind</button></div>
+                </div>
                 
             </div>
         </div>
@@ -102,7 +108,7 @@
                 <div class='templates'>
                     <div class="fileset">
                         <div>
-                            <label>Step 2: </label><button class='deidentify-fileset' disabled>Copy and remove labels from WSIs</button>
+                            <label>Step 2: </label><button class='deidentify-fileset' disabled>Copy and remove identifying images from WSIs</button>
                         </div>
                         <div class="columns fileset-header">
                             <div class="oneline"><h4>Files to copy: <span class="num-files"></span><button class="add-files">+</button></h4></div>
@@ -133,37 +139,42 @@
             </div>
 
             <div id='modify-tab-contents'>
-                <h2 class='centered'>Delete label images from existing WSIs</h2>
+                <h2 class='centered'>Remove identifying images from existing WSIs</h2>
                 <div class='header'>                    
-                    <label>Step 1: </label>
-                    <button class='pick-files'>Choose File(s)</button>
-                    <span class='label'>Select .svs files, or a .csv with a file list</span>
+                    <label>Step 1: Choose </label>
+                    <button class='pick-files'>Specific File(s)</button>
+                     or
+                    <button class='pick-folder'>Entire Directory (with subdirectories)</button>
                 </div>
                 <div class='filesetlist'></div>
                 <div class='templates'>
                     <div class="fileset">
                         <div>
-                            <label>Step 2: </label><button class='deidentify-fileset' disabled>Delete labels from WSIs</button>
+                            <label>Step 2: </label><button class='deidentify-fileset'>Delete label and macro images from WSIs</button>
                         </div>
-                        <div class="columns fileset-header">
-                            <div class="oneline">
+                        <div class="fileset-header">
+                            <div class="modify-info oneline">
                                 <h4>Files to de-label: <span class="num-files"></span>
-                                    <button class="add-files">+</button>
+                                    <button class="add-files">+</button> (<span class='num-both'></span> with label and macro, <span class='num-labels'></span> label only, <span class='num-macros'></span> macro only, <span class='num-neither'></span> neither)
                                 </h4>
                             </div> 
+                            <div class='modify-results oneline'>
+                                <h4><span class='num-succeeded'></span> WSIs delabeled; <span class='num-failed'></span> errors</h4>
+                            </div>
                         </div>
                         <button class="clear-fileset remove-button">X</button>
                         <div class="filelist"></div>
                     </div>
                     <div class="columns file">
-                        <div class="source">
+                        <div class="columns source">
                             <div class="left-ellipsis-outer">
                                 <div class="filepath sourcefile left-ellipsis-inner"></div>
                             </div>
                             
                         </div>
-                        <div class="label"></div>
-                        <div class="macro"></div>
+                        <div class="file-status status"></div>
+                        <div class="label-status status"></div>
+                        <div class="macro-status status"></div>
                         <button class="remove-button" title="Remove item">X</button>
                         
                     </div>
@@ -172,7 +183,26 @@
 
             <div id='home-tab-contents'>
                 <h2>De-identification Tool for Aperio .SVS whole slide images</h2>
-                <p>How does this work?</p>
+                <p>Whole slide images can potentially contain identifying patient information printed on the slide label. Depending on the scanner settings at the time of whole slide imaging, Aperio .svs files can store this information internally in the form of images of the slide label, and occasionally visible in the macro view as well.</p>
+                <p>This tool removes the label and macro images from .svs files, making them safe to share in research settings where patient identifiers are not allowed.</p>
+                <p>The app can be used in two modes:
+                    <ul>
+                    <li><h3>Create a deidentified COPY of SVS files</h3>
+                            <ul>
+                                <li><b>Slower</b> - large files can take time to copy</li>
+                                <li><b>Safe</b> - the original files are not modified</li>
+                            </ul>
+                        </li>
+                        <br>
+                        <li><h3>Modify existing SVS files</h3>
+                            <ul>
+                                <li><b>Faster</b> - no copy operation needed</li>
+                                <li><b>Dangerous</b> - permanently changes the original file</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </p>
+                <p>Use the tabs at the top of the page to get started. Be sure to review the settings page to customize how the app works on this computer.</p> 
 
             </div>
 
