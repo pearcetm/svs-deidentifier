@@ -604,7 +604,7 @@ def copy_and_strip(file, copyop, index):
 
 app=QApplication([]) # create QApplication to enable file dialogs
 
-useChrome = True
+useChrome = False # TODO: set this by commandline option
 if useChrome:
     try:
         eel.init('web')
