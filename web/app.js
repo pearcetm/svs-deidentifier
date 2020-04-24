@@ -269,11 +269,9 @@ $(function(){
 		type:'GET',
 		url:'/readme', 
 		success:function(d){
-			var readme=$('#readme .markdown');
-			$('<div>').appendTo(readme).html(d.help);
-			var r=$('<div>',{class:'readme-html'}).appendTo(readme).html(d.readme);
-			r.prepend($('<div>',{class:'readme-header'})
-				.text('from README.md on the project GitHub page'));
+			$('#readme .markdown.help').html(d.help);
+			$('#readme .markdown.readme').html(d.readme);
+			$('#readme a[href^="#"]').attr('target','_self');
 		}
 	});
 

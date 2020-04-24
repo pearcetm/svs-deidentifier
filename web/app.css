@@ -2,15 +2,10 @@
 	box-sizing:border-box;
 }
 body{
-	/*width:100vw;
-	height:100vh;*/
 	margin:0;
 	padding:=0;
 	text-align: left;
-	/*overflow:auto;
-	position:fixed;
-	left:0;
-	top:0;*/
+	font-family:Helvetica;
 }
 .centered{
 	text-align: center;
@@ -425,8 +420,9 @@ body{
 	white-space: nowrap;
 	flex-shrink: 0;
 }
-.readme-html{
+.readme-header{
 	margin-top:2em;
+	padding-top:1em;
 	border-top:thin gray solid;
 }
 

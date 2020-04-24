@@ -18,7 +18,7 @@
         <script type='text/javascript' src='bootstrap/js/bootstrap.min.js'></script>
         <link href='bootstrap/css/bootstrap.css' rel='stylesheet'>
         <link href='app.css' rel='stylesheet'>
-
+        <base target="_blank">
     </head>
     <body>
         <nav>
@@ -45,7 +45,9 @@
                 <div><button class='ok btn btn-primary'>Confirm choices</button></div>
             </div>
             <div id='readme' class='tab-pane' role="tabpanel" aria-labelledby="open-readme">
-                <div class='markdown'></div>
+                <div class='markdown help'></div>
+                <div class='readme-header'>More information from the <a href='https://github.com/pearcetm/svs-deidentifier'>project GitHub page</a>:</div>
+                <div class='markdown readme'></div>
             </div>
         </div>
         
@@ -183,18 +185,18 @@
 
             <div id='home-tab-contents'>
                 <h2>De-identification Tool for Aperio .SVS whole slide images</h2>
-                <p>Whole slide images can potentially contain identifying patient information printed on the slide label. Depending on the scanner settings at the time of whole slide imaging, Aperio .svs files can store this information internally in the form of images of the slide label, and occasionally visible in the macro view as well.</p>
+                <p>Whole slide images can potentially contain identifying patient information printed on the slide label. Depending on the scanner settings at the time of whole slide imaging, Aperio .svs files can store this information internally in the form of images of the slide label, and occasionally label text is visible in the macro image as well.</p>
                 <p>This tool removes the label and macro images from .svs files, making them safe to share in research settings where patient identifiers are not allowed.</p>
                 <p>The app can be used in two modes:
                     <ul>
-                    <li><h3>Create a deidentified COPY of SVS files</h3>
+                    <li><h3>Create a deidentified COPY of whole slide images</h3>
                             <ul>
                                 <li><b>Slower</b> - large files can take time to copy</li>
                                 <li><b>Safe</b> - the original files are not modified</li>
                             </ul>
                         </li>
                         <br>
-                        <li><h3>Modify existing SVS files</h3>
+                        <li><h3>MODIFY existing whole slide image files</h3>
                             <ul>
                                 <li><b>Faster</b> - no copy operation needed</li>
                                 <li><b>Dangerous</b> - permanently changes the original file</li>
