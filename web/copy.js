@@ -3,7 +3,8 @@ function Copy(page,imports){
 	//"import" functions/objects from the main app script that calls this module
 	var filesep = '/';
 	var filedlg = imports.filedlg;
-	var targetdlg = imports.targetdlg;	
+	var targetdlg = imports.targetdlg;
+	var faileddlg = imports.faileddlg;	
 	var byteval = imports.byteval;
 	var overlay = imports.overlay;
 	var uniqueID = imports.uniqueID;
@@ -17,7 +18,9 @@ function Copy(page,imports){
 		faileddlg.data('target',el);
 		overlay.trigger('activate',[faileddlg]);
 	});
-
+	$('body').on('update-fileset-header','.fileset',function(e){
+		update_fileset_header($(this));
+	})
 	function pick_destination(){
 		overlay.trigger('activate',[filedlg])
 		get_dir(set_destination)

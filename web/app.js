@@ -151,7 +151,7 @@ $(function(){
 		file_item.appendTo(el.closest('.filelist'));
 		el.remove();
 		overlay.trigger('inactivate');
-		update_fileset_header(file_item.closest('.fileset'));
+		file_item.closest('.fileset').trigger('update-fileset-header');
 	})
 	faileddlg.find('.cancel').on('click', function(){
 		overlay.trigger('inactivate');

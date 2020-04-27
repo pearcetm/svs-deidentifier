@@ -320,7 +320,7 @@ def add_description(f):
         return f
 
 def get_filename(f):
-    return f.split(os.path.sep)[-1]
+    return f.split(QDir.fromNativeSeparators(os.path.sep))[-1]
 
 def parse_files(files):
     fileinfo = [{'file': f, 'format': detect_format(f), 'destination': get_filename(f)} for f in files]
