@@ -65,22 +65,27 @@ from bottle import route
 # also requires qt5 to be installed
 # - $ brew install qt5
 from PyQt5.QtWidgets import QApplication, QFileDialog, QLabel, QMainWindow
-from PyQt5.QtCore import QDir, Qt, QUrl, QThread
-from PyQt5.QtWebEngineWidgets import QWebEnginePage, QWebEngineView
-from PyQt5.QtCore import QObject, pyqtSignal
+from PyQt5.QtCore import QObject, pyqtSignal, QThread, QDir #, Qt
 
+#useChrome = True # TODO: set this by commandline option
+### ---- COMMENT ME OUT TO USE CHROME MODE - UNCOMMENT FOR QT MODE ---- ###
+# from PyQt5.QtWebEngineWidgets import QWebEnginePage, QWebEngineView
+# from PyQt5.QtCore import QUrl
+# useChrome = False
 
-class EelThread(QThread):
-    def __init__(self, parent = None, init='web',url='main.html'):
-        QThread.__init__(self, parent)
-        self.init = init
-        self.url = url
+# class EelThread(QThread):
+#     def __init__(self, parent = None, init='web',url='main.html'):
+#         QThread.__init__(self, parent)
+#         self.init = init
+#         self.url = url
 
-    def run(self):        
-        # Note: This is never called directly. It is called by Qt once the
-        # thread environment has been set up.
-        eel.init(self.init)
-        eel.start(self.url, block=True, mode=None)
+#     def run(self):        
+#         # Note: This is never called directly. It is called by Qt once the
+#         # thread environment has been set up.
+#         eel.init(self.init)
+#         eel.start(self.url, block=True, mode=None)
+### ---- END OF COMMENT ME OUT TO USE CHROME MODE - UNCOMMENT FOR QT MODE ---- ###
+
 
 class ThreadsafeCaller(QObject):
     get_signal = pyqtSignal(QObject,dict)
@@ -130,15 +135,20 @@ class ThreadsafeCaller(QObject):
         other=self._make()
         return other._callother(func,*args,**kwargs)
 
+# source: https://stackoverflow.com/a/44352931/1214731        
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
+    return os.path.join(base_path, relative_path)
 
 @route('/settings')
 def settings():
-    with open('settings.md','r') as fp:
+    with open(resource_path('.')+'/settings.md','r') as fp:
         return commonmark.commonmark(fp.read())
 
 @route('/readme')
 def readme():
-    with open('README.md','r') as fp, open('help.md','r') as hp:
+    with open(resource_path('.')+'/README.md','r') as fp, open(resource_path('.')+'/help.md','r') as hp:
         d = {
             'readme':commonmark.commonmark(fp.read()),
             'help':commonmark.commonmark(hp.read())
@@ -602,43 +612,45 @@ def copy_and_strip(file, copyop, index):
     return
 
 
-app=QApplication([]) # create QApplication to enable file dialogs
+# app=QApplication([]) # create QApplication to enable file dialogs
 
-useChrome = False # TODO: set this by commandline option
-if useChrome:
-    try:
-        eel.init('web')
-        eel.start('app.html')
-    except Exception: #no chrome installed? Try falling  back to Edge (Windows 10)
-        try:
-            if sys.platform in ['win32', 'win64'] and int(platform.release()) >= 10:
-                eel.init('web')
-                eel.start('app.html', mode='edge')
-            else:
-                raise
-        except:
-            # pass
-            et=EelThread(init='web',url='app.html')
-            et.start()
 
-            w = QWebEngineView()
-            w.resize(1100,800)
-            w.load(QUrl('http://localhost:8000/app.html'))
-            w.show()
+# if useChrome:
+#     try:
+#         eel.init('web')
+#         eel.start('app.html')
+#     except Exception: #no chrome installed? Try falling  back to Edge (Windows 10)
+#         try:
+#             if sys.platform in ['win32', 'win64'] and int(platform.release()) >= 10:
+#                 eel.init('web')
+#                 eel.start('app.html', mode='edge')
+#             else:
+#                 raise
+#         except:
+#             pass
+### ---- COMMENT ME IN CHROME MODE - UNCOMMENT FOR QT MODE ---- ###            
+#             et=EelThread(init='web',url='app.html')
+#             et.start()
 
-            app.exec()
-else:
-    et=EelThread(init='web',url='app.html')
-    et.start()
+#             w = QWebEngineView()
+#             w.resize(1100,800)
+#             w.load(QUrl('http://localhost:8000/app.html'))
+#             w.show()
 
-    w = QWebEngineView()
-    w.resize(1100,800)
-    w.load(QUrl('http://localhost:8000/app.html'))
-    w.show()
+#             app.exec()
+# else:
+#     et=EelThread(init='web',url='app.html')
+#     et.start()
 
-    app.exec()
+#     w = QWebEngineView()
+#     w.resize(1100,800)
+#     w.load(QUrl('http://localhost:8000/app.html'))
+#     w.show()
 
-app.exit() # quit the QApplication
+#     app.exec()
+### ---- END OF COMMENT ME IN CHROME MODE - UNCOMMENT FOR QT MODE ---- ###    
+
+# app.exit() # quit the QApplication
 
 
 
