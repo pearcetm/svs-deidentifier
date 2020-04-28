@@ -75,6 +75,13 @@ Using your python terminal/editor of choice, run the `deid-chrome.py` or `deid-q
 ### Compile a stand-alone application
 Using [PyInstaller](https://github.com/pyinstaller/pyinstaller), you can build the application into a distributable package in one of two ways: as a single stand-alone file, or as a directory with a separate executable. These have different advantages and drawbacks. One-file mode is simpler - the isn't an extra directory with lots of files - but the app will take longer to launch. In addition, using the built-in web browser doesn't work on MacOS in one-file mode. One-dir mode launches more quickly but if the directory is modified the app will not work. 
 
+### Build all versions
+The individual options below are bundled into a single `build.py` script to simplify the build process. On the command line (from the root directory of the project) run the following:  
+`$ python build.py`
+
+### Build a specfic version
+You can also select a specific invididual version (one file vs one directory, chrome vs qwebengine) using the options below.
+
 #### One-file mode
 In the base directory for the project, run the following command:
 ```
@@ -108,6 +115,15 @@ $ python -m eel deid-chrome.py web --name deid-chrome-onedir --onedir --noconsol
 $ python -m eel deid-qwebengine.py web --name deid-qwebengine-onedir --onedir --noconsole --icon=icon.ico --add-data '*.md:.' --noconfirm
 
 ```
+
+
+## Operating system notes
+- Windows: Eel doesn't work with python 3.8 - 3.6.8 works
+- Mac: QWebEngine does not work in one-file mode; one-dir mode works fine
+
 ## Contribute to the project
 Please leave comments/questions/issues on the GitHub page, and submit pull requests with bug fixes and new features!
+
+
+
 
