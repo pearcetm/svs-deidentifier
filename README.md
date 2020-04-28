@@ -59,14 +59,16 @@ To build the de-identifier yourself, start by cloning the project from GitHub.
  Python dependencies (other versions may work, but these have been tested and confirmed to work properly): 
  - Eel==0.12.2
  - PyQt5==5.14.1
+ - PyQtWebEngine (Windows only?)
  - tinynumpy (needed for tiffparser)
+ - commonmark (to automatically include README in the app during the build)
  - pyinstaller (to create application package)
 
 Also requires [Qt](https://www.qt.io/) for cross-platform file dialog and web browser UIs.
 
 #### To install all dependencies at once:
 ```
-    $ pip install Eel==0.12.2 PyQt5==5.14.1 tinynumpy pyinstaller
+    $ pip install Eel==0.12.2 PyQt5==5.14.1 PyQtWebEngine tinynumpy commonmark pyinstaller
 ```
 
 ### Run as a python script
@@ -86,16 +88,16 @@ You can also select a specific invididual version (one file vs one directory, ch
 In the base directory for the project, run the following command:
 ```
 # For Linux
-$ python -m eel deid-chrome.py web --name deid-chrome-onefile --onefile --noconsole --icon=icon.icns --add-data '*.md:.' --noconfirm
-$ python -m eel deid-qwebengine.py web --name deid-qwebengine-onefile --onefile --noconsole --icon=icon.icns --add-data '*.md:.' --noconfirm
+$ python -m eel deid-chrome.py web --name deid-chrome-onefile --onefile --noconsole --icon=icon.png --add-data '*.md:.' --noconfirm
+$ python -m eel deid-qwebengine.py web --name deid-qwebengine-onefile --onefile --noconsole --icon=icon.png --add-data '*.md:.' --noconfirm
 
 # For Mac
 $ python -m eel deid-chrome.py web --name deid-chrome-onefile --onefile --noconsole --icon=icon.icns --add-data '*.md:.' --noconfirm
 ***One-file mode with qwebengine does not work with pyinstaller***
 
 # For Windows
-$ python -m eel deid-chrome.py web --name deid-chrome-onefile --onefile --noconsole --icon=icon.ico --add-data '*.md:.' --noconfirm
-$ python -m eel deid-qwebengine.py web --name deid-qwebengine-onefile --onefile --noconsole --icon=icon.ico --add-data '*.md:.' --noconfirm
+$ python -m eel deid-chrome.py web --name deid-chrome-onefile --onefile --noconsole --icon=icon.ico --add-data *.md;. --noconfirm
+$ python -m eel deid-qwebengine.py web --name deid-qwebengine-onefile --onefile --noconsole --icon=icon.ico --add-data *.md;. --noconfirm
 
 ```
 
@@ -103,22 +105,24 @@ $ python -m eel deid-qwebengine.py web --name deid-qwebengine-onefile --onefile 
 In the base directory for the project, run the following command:
 ```
 # For Linux
-$ python -m eel deid-chrome.py web --name deid-chrome-onedir --onedir --noconsole --icon=icon.icns --add-data '*.md:.' --noconfirm
-$ python -m eel deid-qwebengine.py web --name deid-qwebengine-onedir --onedir --noconsole --icon=icon.icns --add-data '*.md:.' --noconfirm
+$ python -m eel deid-chrome.py web --name deid-chrome-onedir --onedir --noconsole --icon=icon.png --add-data '*.md:.' --noconfirm
+$ python -m eel deid-qwebengine.py web --name deid-qwebengine-onedir --onedir --noconsole --icon=icon.png --add-data '*.md:.' --noconfirm
 
 # For Mac
 $ python -m eel deid-chrome.py web --name deid-chrome-onedir --onedir --noconsole --icon=icon.icns --add-data '*.md:.' --noconfirm
 $ python -m eel deid-qwebengine.py web --name deid-qwebengine-onedir --onedir --noconsole --icon=icon.icns --add-data '*.md:.' --noconfirm
 
 # For Windows
-$ python -m eel deid-chrome.py web --name deid-chrome-onedir --onedir --noconsole --icon=icon.ico --add-data '*.md:.' --noconfirm
-$ python -m eel deid-qwebengine.py web --name deid-qwebengine-onedir --onedir --noconsole --icon=icon.ico --add-data '*.md:.' --noconfirm
+$ python -m eel deid-chrome.py web --name deid-chrome-onedir --onedir --noconsole --icon=icon.ico --add-data *.md;. --noconfirm
+$ python -m eel deid-qwebengine.py web --name deid-qwebengine-onedir --onedir --noconsole --icon=icon.ico --add-data *.md;. --noconfirm
 
 ```
 
 
 ## Operating system notes
-- Windows: Eel doesn't work with python 3.8 - 3.6.8 works
+- Windows:
+ - Eel doesn't work with python 3.8 - 3.6.8 works
+ - use `pip install PyQtWebEngine`
 - Mac: QWebEngine does not work in one-file mode; one-dir mode works fine
 
 ## Contribute to the project

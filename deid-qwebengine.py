@@ -2,9 +2,12 @@
 import eel
 from PyQt5.QtWidgets import QApplication
 import wsideidentifier
-
-from PyQt5.QtWebEngineWidgets import QWebEnginePage, QWebEngineView
 from PyQt5.QtCore import QUrl, QThread
+
+try:
+	from PyQt5.QtWebEngineWidgets import QWebEnginePage, QWebEngineView
+except Exception:
+	from PyQtWebEngine import QWebEnginePage, QWebEngineView
 
 class EelThread(QThread):
     def __init__(self, parent = None, init='web',url='main.html'):
