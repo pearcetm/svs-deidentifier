@@ -18,9 +18,9 @@ function Copy(page,imports){
 		faileddlg.data('target',el);
 		overlay.trigger('activate',[faileddlg]);
 	});
-	$('body').on('update-fileset-header','.fileset',function(e){
-		update_fileset_header($(this));
-	})
+	// $('body').on('update-fileset-header','.fileset',function(e){
+	// 	update_fileset_header($(this));
+	// })
 	function pick_destination(){
 		overlay.trigger('activate',[filedlg])
 		get_dir(set_destination)
@@ -56,9 +56,9 @@ function Copy(page,imports){
 			if(e.failed){
 				el.addClass('failed').data('failure-message',e.failure_message);
 			}
-			if(data.finalized.length-1 == i){
-				update_fileset_header(el.closest('.fileset'));
-			}
+			// if(data.finalized.length-1 == i){
+			// 	update_fileset_header(el.closest('.fileset'));
+			// }
 		});
 	}
 
@@ -77,7 +77,7 @@ function Copy(page,imports){
 
 		var filesize=e.find('.filesize').data('filesize');
 		total.append(byteval(filesize)).data('filesize',filesize);
-		current.append(byteval(0, total.find('.byteval').data('units')));
+		current.append(byteval(0, total.find('.byteval').data('units'))).data('remaining',filesize);
 		percent.text('0');
 
 		p.data('original',e);
@@ -106,6 +106,28 @@ function Copy(page,imports){
 			return {source:source,dest:dest,id:id}
 		}).toArray();
 		// console.log('file info',fileinfo)
+		// change status of the display to reflect ongoing copy/delabel operation
+		fileset.addClass('inprogress').removeClass('finished');
+		
+		//setup timer for calculating estimated time remaining
+		var size_remaining = fileset.find('.progress-monitor:not(.finalized) .total').toArray().reduce(function(t,e){
+			return t+$(e).data('filesize');
+		},0);
+		var now = new Date().getTime();
+		var starttime=now;
+		if(!!fileset.data('started')) starttime=fileset.data('starttime');//save old value if new files were added while copying
+		fileset.data({timer:[],starttime:starttime});//clear the old timer and set the start time 
+		update_fileset_header(fileset);
+
+		//start timing the operation
+		var intervalfunc = ( (fs)=> ()=>update_fileset_header(fs))(fileset);//capture fileset into lambda for setInterval callback
+		var interval=window.setInterval(intervalfunc, 1000);
+		fileset.data('interval',interval);
+
+		//disable changing the target directory now that we've started
+		fileset.find('.change-target').prop('disabled',true);
+
+		//do the job
 		eel.do_copy_and_strip(fileinfo)
 	}
 
@@ -124,12 +146,66 @@ function Copy(page,imports){
 		var h = fileset.find('.fileset-header');
 		var target = h.find('.target');
 		var info=target.data('destination');
+		
+		var rs = fileset.find('.progress-monitor:not(.finalized) .current').toArray().reduce(function(t,e){
+			return t+$(e).data('remaining');
+		},0);
 		var ts = fileset.find('.filesize').toArray().reduce(function(t,e){
 			return t+$(e).data('filesize');
-		}, 0)
-		ts = fileset.find('.progress-monitor:not(.finalized) .current').toArray().reduce(function(t,e){
-			return t+$(e).data('remaining');
-		},ts);
+		}, rs);
+		
+		//calculate remaining time
+		var now = new Date().getTime();
+		var timer=fileset.data('timer');
+		var starttime=fileset.data('starttime');
+		if(!timer) timer=[];
+		timer.push({t:now,s:rs});
+
+		//the first few seconds will show too fast of progress because of disk cache writing
+		//the estimate of total time will be much better if we ignore this.
+		if( (now-starttime) < 7500) timer=timer.slice(-1);//only keep the most recent value
+
+		if( (now-starttime) < 10500) timer=timer.slice(-2);//only keep the most recent 2 values for the next seconds
+
+		var timer=timer.slice(-20);//only keep up to 20 data points
+		fileset.data('timer',timer);
+
+		var remaining=fileset.find('.time-remaining');
+		var progress=timer[0].s - timer.slice(-1)[0].s; //size at start minus size now
+		var interval=timer.slice(-1)[0].t - timer[0].t; //time now minus time at start
+		
+
+		if(interval < 3500){
+			//make sure we have enough data points for a reasonable calculation
+			remaining.text('Calculating...');
+		}
+		else{
+			var rate=progress/interval;
+			var est = rs / rate; //estimated time remaining in milliseconds
+			var totalsec = est/1000;//convert to seconds
+			var hours=Math.floor(totalsec / 3600);
+			var minutes=Math.floor( (totalsec - (hours*3600)) / 60);
+			var seconds=Math.floor(totalsec - (hours*3600) - (minutes*60));
+			var formatted = ('00'+seconds).slice(-2)+'s';
+			if( (minutes+hours) > 0) formatted = ''+minutes+'m '+formatted;
+			if( hours > 0) formatted = ''+hours+'h '+formatted;
+			remaining.text(formatted);
+			//console.log('Rate',rate/1000000,'Remaining',rs/1000000)
+		}
+
+		if(rs==0 && fileset.hasClass('inprogress')){
+			fileset.removeClass('inprogress').addClass('finished');
+			window.clearInterval(fileset.data('interval'));
+			var totalsec = (now - fileset.data('starttime')) / 1000;//convert to seconds
+			var hours=Math.floor(totalsec / 3600);
+			var minutes=Math.floor( (totalsec - (hours*3600)) / 60);
+			var seconds=Math.floor(totalsec - (hours*3600) - (minutes*60));
+			var formatted = ('00'+seconds).slice(-2)+'s';
+			if( (minutes+hours) > 0) formatted = ''+minutes+'m '+formatted;
+			if( hours > 0) formatted = ''+hours+'h '+formatted;
+			remaining.text(formatted);
+		}
+
 		h.find('.totalsize').empty().append(byteval(ts));
 		h.find('.num-files').text(fileset.find('.file').length);
 		if(info){

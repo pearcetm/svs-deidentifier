@@ -15,6 +15,7 @@ function Modify(page,imports){
 	confirmdlg.find('.cancel').on('click',function(){overlay.trigger('inactivate')});
 
 	
+	
 	function ask_confirmation(fileset){
 		confirmdlg.find('.ok').off('click').on('click',function(){
 			overlay.trigger('inactivate');
@@ -57,14 +58,17 @@ function Modify(page,imports){
 	}
 	function update_fileset_header(fileset){
 		var h = fileset.find('.fileset-header');
-		h.find('.num-files').text(fileset.find('.file:not(.modified)').length);
-		h.find('.num-both').text(fileset.find('.file:not(.modified).has-label.has-macro').length);
-		h.find('.num-labels').text(fileset.find('.file:not(.modified).has-label:not(.has-macro)').length);
-		h.find('.num-macros').text(fileset.find('.file:not(.modified).has-macro:not(.has-label)').length);
-		h.find('.num-neither').text(fileset.find('.file:not(.modified):not(.has-label):not(.has-macro)').length);
+		h.find('.num-files').text(fileset.find('.file:not(.no-info):not(.readonly):not(.modified)').length);
+		h.find('.num-both').text(fileset.find('.file:not(.no-info):not(.readonly):not(.modified).has-label.has-macro').length);
+		h.find('.num-labels').text(fileset.find('.file:not(.no-info):not(.readonly):not(.modified).has-label:not(.has-macro)').length);
+		h.find('.num-macros').text(fileset.find('.file:not(.no-info):not(.readonly):not(.modified).has-macro:not(.has-label)').length);
+		h.find('.num-neither').text(fileset.find('.file:not(.no-info):not(.readonly):not(.modified):not(.has-label):not(.has-macro)').length);
 		h.find('.num-succeeded').text(fileset.find('.file.modified:not(.failed)').length);
 		h.find('.num-failed').text(fileset.find('.file.failed').length);
-		
+		h.find('.num-readonly').text(fileset.find('.file.readonly').length);
+		if(h.find('.no-info').length==0){
+			fileset.find('button.deidentify-fileset').prop('disabled',false);
+		}
 	}
 	
 	function set_fileset_destination(fileset,destination){
@@ -77,6 +81,7 @@ function Modify(page,imports){
 	}
 	function setup_fileset(fileinfo){
 		var fileset = page.find('.templates .fileset').clone().appendTo(page.find('.filesetlist'));
+		fileset.find('.deidentify-fileset').prop('disabled',true);//start out disabled; will be enabled when all files have info
 		fileset.find('.add-files').on('click',function(){
 			overlay.trigger('activate',[filedlg])
 			get_inplace_files((function(f){return function(files){add_files_to_fileset(files,f)} })(fileset))
@@ -93,9 +98,9 @@ function Modify(page,imports){
 		if(fileinfo.invalid.length>0){
 			invalid_files(fileinfo.invalid);
 		}
-		if(fileinfo.readonly.length>0){
-			readonly_files(fileinfo.invalid);
-		}
+		// if(fileinfo.readonly && fileinfo.readonly.length>0){
+		// 	readonly_files(fileinfo.readonly);
+		// }
 		if(fileinfo.aperio.length>0){
 			if(typeof fileset == 'undefined'){
 				fileset = setup_fileset();
@@ -108,13 +113,14 @@ function Modify(page,imports){
 		return fileset;
 	}
 	function make_file_row(v){
-		var row = page.find('.templates .file').clone().data('file',v.file);
-		if(v.has_label){
-			row.addClass('has-label');
-		}
-		if(v.has_macro){
-			row.addClass('has-macro');
-		}
+		var row = page.find('.templates .file').clone().attr('data-file',v.file);
+		// if(v.has_label){
+		// 	row.addClass('has-label');
+		// }
+		// if(v.has_macro){
+		// 	row.addClass('has-macro');
+		// }
+		row.addClass('no-info');
 		row.find('.sourcefile').text(v.file);
 		row.find('.remove-button').on('click',function(){
 			var fileset=row.closest('.fileset')
@@ -123,6 +129,20 @@ function Modify(page,imports){
 		})
 
 		return row;
+	}
+	eel.expose(add_inplace_file)
+	function add_inplace_file(f){
+		//console.log('Add file to modify',f,new Date().getTime());
+		var file=page.find('.file[data-file="'+f.file+'"]');
+		if(file.length==0){
+			console.log('Failed to find file row for',f);
+			return;
+		}
+		file.removeClass('no-info')
+		if(f.has_label) file.addClass('has-label');
+		if(f.has_macro) file.addClass('has-macro');
+		if(!f.writable) file.addClass('readonly');
+		update_fileset_header(file.closest('.fileset'));
 	}
 	function invalid_files(list){
 		var fileset = $('<div>',{class:'fileset invalid'}).appendTo(page.find('.filesetlist'));
@@ -139,21 +159,21 @@ function Modify(page,imports){
 			row.text(v.file)
 		})
 	}
-	function readonly_files(list){
-		var fileset = $('<div>',{class:'fileset readonly invalid'}).appendTo(page.find('.filesetlist'));
-		var h = $('<div>',{class:'columns fileset-header readonly invalid'}).appendTo(fileset);
-		var l = $('<div>').appendTo(h);
-		var r = $('<div>').appendTo(h);
-		var clear=$('<button>',{class:'clear-invalid clear-fileset'}).text('Remove').appendTo(r);
-		clear.on('click',function(){fileset.remove()});
+	// function readonly_files(list){
+	// 	var fileset = $('<div>',{class:'fileset readonly invalid'}).appendTo(page.find('.filesetlist'));
+	// 	var h = $('<div>',{class:'columns fileset-header readonly invalid'}).appendTo(fileset);
+	// 	var l = $('<div>').appendTo(h);
+	// 	var r = $('<div>').appendTo(h);
+	// 	var clear=$('<button>',{class:'clear-invalid clear-fileset'}).text('Remove').appendTo(r);
+	// 	clear.on('click',function(){fileset.remove()});
 
-		$('<h4>').html('The following files are READ ONLY and cannot be modified').appendTo(l);
+	// 	$('<h4>').html('The following files are READ ONLY and cannot be modified').appendTo(l);
 		
-		$.each(list, function(i,v){
-			var row=$('<div>',{class:'columns file filepath invalid'}).appendTo(fileset);
-			row.text(v.file)
-		})
-	}
+	// 	$.each(list, function(i,v){
+	// 		var row=$('<div>',{class:'columns file filepath invalid'}).appendTo(fileset);
+	// 		row.text(v.file)
+	// 	})
+	// }
 
 	page.find('.pick-files').on('click',function(){
 		overlay.trigger('activate',[filedlg]);

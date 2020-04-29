@@ -462,6 +462,7 @@ body{
 	content:'Macro';
 	margin:0.5em;
 	font-weight:normal;
+	color:gray;
 	opacity:0.5;
 	text-decoration: line-through;
 }
@@ -488,4 +489,25 @@ body{
 }
 #home-tab-contents h3{
 	margin:0.2em 0;
+}
+.time-remaining{
+	margin-left:1em;
+}
+.time-remaining::before{
+	content:'Time remaining:';
+	margin-right:0.1em;
+}
+.fileset.finished .time-remaining::before{
+	content:'Time to complete:';
+	margin-right:0.1em;
+}
+.fileset:not(.inprogress):not(.finished) .time-remaining{
+	display:none;
+}
+.file.readonly{
+	background-color:pink;
+}
+.file.readonly::after{
+	content:'File is read only';
+	margin-left:0.5em;
 }

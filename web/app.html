@@ -2,7 +2,7 @@
 <html>
     <head>
         <!-- <script src="https://code.jquery.com/jquery-1.11.0.min.js"></script> -->
-        
+        <link rel=icon href=/favicon.png>
         <meta name="viewport" content="width=device-width, height=device-height, user-scalable=0, maximum-scale=1.0, minimum-scale=1.0, initial-scale=1.0">
         <meta charset="utf-8">
         <title>WSI Deidentifier for Aperio SVS files</title>
@@ -110,7 +110,9 @@
                 <div class='templates'>
                     <div class="fileset">
                         <div>
-                            <label>Step 2: </label><button class='deidentify-fileset' disabled>Copy and remove identifying images from WSIs</button>
+                            <label>Step 2: </label>
+                            <button class='deidentify-fileset' disabled>Copy and remove identifying images from WSIs</button>
+                            <span class='time-remaining'></span>
                         </div>
                         <div class="columns fileset-header">
                             <div class="oneline"><h4>Files to copy: <span class="num-files"></span><button class="add-files">+</button></h4></div>
@@ -157,7 +159,7 @@
                         <div class="fileset-header">
                             <div class="modify-info oneline">
                                 <h4>Files to de-label: <span class="num-files"></span>
-                                    <button class="add-files">+</button> (<span class='num-both'></span> with label and macro, <span class='num-labels'></span> label only, <span class='num-macros'></span> macro only, <span class='num-neither'></span> neither)
+                                    <button class="add-files">+</button> <span class='num-both'></span> with label and macro, <span class='num-labels'></span> label only, <span class='num-macros'></span> macro only, <span class='num-neither'></span> neither, <span class='num-readonly'></span> read-only
                                 </h4>
                             </div> 
                             <div class='modify-results oneline'>

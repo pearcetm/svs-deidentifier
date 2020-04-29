@@ -343,16 +343,21 @@ def inplace_info(f):
         macro = [page for page in t.pages if 'macro' in page.description]
         f['has_label']=len(label)>0
         f['has_macro']=len(macro)>0
+        eel.add_inplace_file(f)
+
+def get_inplace_info(fs):
+    [inplace_info(f) for f in fs['aperio']]
 
 def parse_inplace_files(files):
     fs=parse_files(files);
-    [inplace_info(f) for f in fs['aperio']]
+    threading.Thread(target=get_inplace_info, args=[fs]).start()# do this in a separate thread so the app stays responsive
+    # [inplace_info(f) for f in fs['aperio']]
     # [print(f'{f}----\n') for f in fs['aperio']]
-    filelist={'aperio':[f for f in fs['aperio'] if f['writable']==True],
-              'readonly':[f for f in fs['aperio'] if f['writable']==False],
-              'invalid':fs['invalid']}
+    # filelist={'aperio':[f for f in fs['aperio'] if f['writable']==True],
+    #           'readonly':[f for f in fs['aperio'] if f['writable']==False],
+    #           'invalid':fs['invalid']}
     # output = {'aperio':} // check if aperio files are writable here and add that to the output
-    return filelist
+    return fs
 
 # File Dialog methods
 # use Filebrowser objects for thread safety via signal-slot mechanisms
@@ -405,7 +410,7 @@ def get_inplace_dir(dlgtype='native',path=''):
         eel.set_follow_dest(result['absolutePath'])
 
     print('directory chosen:',result['directory'])
-    files = [os.path.join(dp, f) for dp, dn, filenames in os.walk(result['directory'])
+    files = [os.path.join(dp, f).replace('\\','/') for dp, dn, filenames in os.walk(result['directory'])
                               for f in filenames if os.path.splitext(f)[1].lower() == '.svs']
     # if result['directory'] != '':
     #     total, used, free = shutil.disk_usage(result['directory'])
@@ -489,8 +494,9 @@ def do_copy_and_strip(files):
                       'failure_message':''} for f in files])
 
     threading.Thread(target=track_copy_progress, args=[copyop]).start()
-    for index, f in enumerate(files):
-        threading.Thread(target=copy_and_strip, args=[f, copyop, index]).start()
+    threading.Thread(target=copy_and_strip_all, args=[files, copyop]).start()
+    # for index, f in enumerate(files):
+    #     threading.Thread(target=copy_and_strip, args=[f, copyop, index]).start()
     
     return 'OK'
 
@@ -564,6 +570,12 @@ def track_copy_progress(copyop):
         # ii+=1
     print('Finished tracking progress')
 
+
+# copy_and_strip_all: iterate over all files and copy and remove labels
+def copy_and_strip_all(files,copyop):
+    [copy_and_strip(file,copyop,index) for index,file in enumerate(files)]
+
+
 # copy_and_strip: single file copy/deidentify operation. 
 #   to be done in a thread for concurrent I/O using CopyOp object for progress updates 
 def copy_and_strip(file, copyop, index):
@@ -610,48 +622,6 @@ def copy_and_strip(file, copyop, index):
     finally:
         copyop.update(index, {'done':True})
     return
-
-
-# app=QApplication([]) # create QApplication to enable file dialogs
-
-
-# if useChrome:
-#     try:
-#         eel.init('web')
-#         eel.start('app.html')
-#     except Exception: #no chrome installed? Try falling  back to Edge (Windows 10)
-#         try:
-#             if sys.platform in ['win32', 'win64'] and int(platform.release()) >= 10:
-#                 eel.init('web')
-#                 eel.start('app.html', mode='edge')
-#             else:
-#                 raise
-#         except:
-#             pass
-### ---- COMMENT ME IN CHROME MODE - UNCOMMENT FOR QT MODE ---- ###            
-#             et=EelThread(init='web',url='app.html')
-#             et.start()
-
-#             w = QWebEngineView()
-#             w.resize(1100,800)
-#             w.load(QUrl('http://localhost:8000/app.html'))
-#             w.show()
-
-#             app.exec()
-# else:
-#     et=EelThread(init='web',url='app.html')
-#     et.start()
-
-#     w = QWebEngineView()
-#     w.resize(1100,800)
-#     w.load(QUrl('http://localhost:8000/app.html'))
-#     w.show()
-
-#     app.exec()
-### ---- END OF COMMENT ME IN CHROME MODE - UNCOMMENT FOR QT MODE ---- ###    
-
-# app.exit() # quit the QApplication
-
 
 
 
