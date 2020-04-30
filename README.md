@@ -58,8 +58,8 @@ To build the de-identifier yourself, start by cloning the project from GitHub.
 
  Python dependencies (other versions may work, but these have been tested and confirmed to work properly): 
  - Eel==0.12.2
- - PyQt5==5.14.1
- - PyQtWebEngine (Windows only?)
+ - PyQt5=={version} (**version: 5.14.1 works on Mac but not Ubuntu; 5.14.0 OK on Ubuntu)
+ - PyQtWebEngine (Windows and Linux)
  - tinynumpy (needed for tiffparser)
  - commonmark (to automatically include README in the app during the build)
  - pyinstaller (to create application package)
@@ -68,7 +68,7 @@ Also requires [Qt](https://www.qt.io/) for cross-platform file dialog and web br
 
 #### To install all dependencies at once:
 ```
-    $ pip install Eel==0.12.2 PyQt5==5.14.1 PyQtWebEngine tinynumpy commonmark pyinstaller
+    $ pip install Eel==0.12.2 PyQt5=={**version} PyQtWebEngine tinynumpy commonmark pyinstaller
 ```
 
 ### Run as a python script
