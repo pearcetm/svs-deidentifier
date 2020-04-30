@@ -85,7 +85,7 @@ The individual options below are bundled into a single `build.py` script to simp
 You can also select a specific invididual version (one file vs one directory, chrome vs qwebengine) using the options below.
 
 #### One-file mode
-In the base directory for the project, run the following command:
+In the base directory for the project, run one of the following commands (change the file name as you like):
 ```
 # For Linux
 $ python -m eel deid-chrome.py web --name deid-chrome-onefile --onefile --noconsole --icon=icon.png --add-data '*.md:.' --noconfirm
@@ -102,7 +102,7 @@ $ python -m eel deid-qwebengine.py web --name deid-qwebengine-onefile --onefile 
 ```
 
 #### One-dir mode
-In the base directory for the project, run the following command:
+In the base directory for the project, run the following command  (change the file name as you like):
 ```
 # For Linux
 $ python -m eel deid-chrome.py web --name deid-chrome-onedir --onedir --noconsole --icon=icon.png --add-data '*.md:.' --noconfirm
