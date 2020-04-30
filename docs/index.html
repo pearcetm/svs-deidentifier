@@ -1,13 +1,57 @@
 <!DOCTYPE html>
 <head>
-	<link rel=icon href=/favicon.png>
+	<link rel='icon' href='icon.png'>
 	<meta charset="utf-8">
     <title>WSI Deidentifier for Aperio SVS files</title>
-    <link rel=stylesheet href=/index.css>
+    <link rel='stylesheet' href='index.css'>
     <style>
     	
     </style>
 </head>
 <body>
-	<h2>svs-deidentifier</h2>
+	<div class='content'>
+		<h1>De-identify Aperio SVS whole slide image files</h1>
+		<p>TL;DR: <a href='#downloads'>try the stand-alone application</a> for deidentifying Aperio SVS files</p>
+		<h2>The problem</h2>
+		<p>Whole slide images (WSIs) - digitized microscope slides - are a valuable source of data for research on human diseases.
+		When microscope slides are digitized, the scanner often captures an image of the slide label, to keep track of which slide was digitized.
+		For pathology specimens of real human patients, the slide label often shows the patient's name and/or other identifiers,
+		making the resulting WSIs into protected health information.</p>
+		<p>This demonstration WSI from the <a href='http://openslide.cs.cmu.edu/download/openslide-testdata/Aperio/'>OpenSlide example data website</a> demonstrates the label and macro images:</p>
+		<div class='img-wrapper'>
+			<img src='identified.png'>
+		</div>
+		<p>As you can see, the WSI file contains not just the high resolution tissue image, but also the slide label and a macro view showing the entire slide, including label, from above. In this case the label does not have patient information, but a clincal slide would. Depending on the label type and illumination in the scanner, the macro view can also show a readable label.</p>
+		<h3>The solution</h3>
+		<p>By removing the label and macro images, the WSI file can be safely used for research in a deidentified manner. The <a href="https://github.com/pearcetm/svs-deidentifier">svs-deidentifier</a> is an open-source application built to efficiently deidentify WSIs, specifically Aperio .svs image files.</p>
+		<h2>See it in action</h2>
+		<h4>WSIs selected for deidentification:</h4>
+		<div class='img-wrapper'>
+			<img src='copypage.png'>
+		</div>
+		<h4>Deidentification in progress:</h4>
+		<div class='img-wrapper'>
+			<img src='inprogress.png'>
+		</div>
+		<h4>Completed:</h4>
+		<div class='img-wrapper'>
+			<img src='finished.png'>
+		</div>
+		<p>The app can be used in two modes: 1) create a deidentified copy; 2) modify a WSI in place. In the images above, the app was used in "Copy" mode, and the resulting deidentified images were created in a new folder.</p>
+		<h4>The result:</h4>
+		<div class='img-wrapper'>
+			<img src='deidentified.png'>
+		</div>
+		<p>Opening the resulting file with a whole slide image viewer demonstrates that the "associated images" for label and macro have been removed, and the label data cannot be shown anymore. Safely deidentified!</p>
+		
+		<h2 id='downloads'>Downloads</h2>
+		<div>
+			Downloads can be found on the project <a href="https://github.com/pearcetm/svs-deidentifier/releases">Github page under Releases</a>
+			<ul>
+				<li>Windows: <a href="">Chrome renderer</a> or <a href="">QtWebEngine renderer</a></li>
+				<li>Mac: <a href="">Chrome renderer</a> or <a href="">QtWebEngine renderer</a></li>
+				<li>Linux: <a href="">Chrome renderer</a> or <a href="">QtWebEngine renderer</a></li>
+			</ul>
+		</div>
+	</div>
 </body>

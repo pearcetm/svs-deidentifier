@@ -1,20 +1,22 @@
+body{
+	padding:2em;
+	box-sizing:border-box;
+	font-family:Helvetica;
+}
 .content{
 	max-width:960px;
 	margin:0 auto;
+	overflow:hidden;
+	position:relative;
 }
-.page-link{
-	border: thin lightgray solid;
-	margin:8px 0;
-	border-radius:5px;
-	padding:5px;
-	box-shadow:5px 5px gray;
-	display:flex;
-	color:black;
-	text-decoration:none;
-}
-.page-link>div{
-	flex:1 1 0;
+.img-wrapper{
+	width:90%;
+	overflow:hidden;
+	margin:10px auto;
+	border:thin black solid;
 }
 img{
+	width:100%;
+	height:100%;
 	object-fit:contain;
 }
