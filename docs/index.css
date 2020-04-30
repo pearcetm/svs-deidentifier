@@ -1,0 +1,20 @@
+.content{
+	max-width:960px;
+	margin:0 auto;
+}
+.page-link{
+	border: thin lightgray solid;
+	margin:8px 0;
+	border-radius:5px;
+	padding:5px;
+	box-shadow:5px 5px gray;
+	display:flex;
+	color:black;
+	text-decoration:none;
+}
+.page-link>div{
+	flex:1 1 0;
+}
+img{
+	object-fit:contain;
+}
