@@ -168,7 +168,24 @@ def delete_associated_image(slide_path, image_type):
     fp = open(slide_path, 'r+b')
     t = tiffparser.TiffFile(fp)
 
-    filtered_pages = [page for page in t.pages if image_type in page.description]
+    # logic here will depend on file type. AT2 and older SVS files have "label" and "macro"
+    # strings in the page descriptions, which identifies the relevant pages to modify.
+    # in contrast, the GT450 scanner creates svs files which do not have this, but the label
+    # and macro images are always the last two pages and are striped, not tiled.
+    # The header of the first page will contain a description that indicates which file type it is
+    first_page=t.pages[0]
+    filtered_pages=[]
+    if 'Aperio Image Library' in first_page.description:
+        filtered_pages = [page for page in t.pages if image_type in page.description]
+    elif 'Aperio Leica Biosystems GT450' in first_page.description:
+        if image_type=='label':
+            filtered_pages=[t.pages[-2]]
+        else:
+            filtered_pages=[t.pages[-1]]
+    else:
+        # default to old-style labeled pages
+        filtered_pages = [page for page in t.pages if image_type in page.description]
+
     num_results = len(filtered_pages)
     if num_results > 1:
         raise Exception(f'Invalid SVS format: duplicate associated {image_type} images found')
