@@ -1,0 +1,27 @@
+cff-version: 1.2.0
+title: svs-deidentifier
+message: "If you use this software, please cite it using the metadata from this file."
+type: software
+authors:
+  - given-names: Thomas
+    family-names: Pearce
+    email: tmpearce@gmail.com
+identifiers:
+  - type: url
+    value: https://pearcetm.github.io/svs-deidentifier
+    description: Homepage
+  - type: url
+    value: https://github.com/pearcetm/svs-deidentifier
+    description: Repository
+repository-code: https://github.com/pearcetm/svs-deidentifier
+url: https://pearcetm.github.io/svs-deidentifier
+abstract: "An open-source cross-platform application for deleting label and macro images from Aperio SVS files (whole slide images)"
+keywords:
+  - javascript
+  - python
+  - image
+  - whole-slide-image
+  - svs
+license: MIT
+version: 0.9.1
+date-released: 2020-09-25
